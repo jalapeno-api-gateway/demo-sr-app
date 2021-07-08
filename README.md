@@ -49,14 +49,14 @@ environment:
 - Hit `cmd`  + `p` to open the command pallet.
 - Enter `>` and then choose `okteto up`
 - When prompted, choose your `okteto.yml` file.
-- When prompted, choose `linux` as the containers operating system.
+- When prompted, choose `Linux` as the containers operating system.
 
 ### Step 3: Setup the Container
 - In the VSCode instance from the container, install the `Go` extension, otherwise the command `go` will not work on the VSCode command line.
 - Install any additional extensions you want.
 
 #### Install the Protocol Buffer Compiler
-Here is the official guide: https://grpc.io/docs/protoc-installation/
+Here is the official guide: https://grpc.io/docs/protoc-installation/  
 Just run these commands:
 ```bash
 $ apt update
@@ -67,7 +67,7 @@ $ rm protoc-3.17.3-linux-x86_64.zip
 ```
 
 #### Install the gRPC Library for Go
-Here is the official guide: https://grpc.io/docs/languages/go/quickstart/
+Here is the official guide: https://grpc.io/docs/languages/go/quickstart/  
 Just run these commands:
 ```bash
 $ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
