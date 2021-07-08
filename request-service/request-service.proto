@@ -1,0 +1,23 @@
+syntax = "proto3";
+package requestservice;
+
+option go_package = "gitlab.ost.ch/ins/jalapeno-api/sr-app/request-service;requestservice";
+
+message Nodes {
+    repeated Node nodes = 1;
+}
+
+message Node {
+    int32 id = 1;
+    string name = 2;
+    int32 asn = 3;
+}
+
+message NodeIds {
+    repeated int32 ids = 1;
+}
+
+service ApiGateway {
+    rpc GetNode(NodeIds) returns (Nodes) {}
+    rpc GetNodes(NodeIds) returns (stream Node) {}
+}
