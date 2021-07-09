@@ -21,7 +21,7 @@ func main() {
 	defer conn.Close()
 
 	client := rsproto.NewApiGatewayClient(conn)
-	ids := []int32{1, 2, 5, 10}
+	ids := []string{"2_0_0_0000.0000.000a", "2_0_0_0000.0000.0001", "2_0_0_0000.0000.000c"}
 	message := &rsproto.NodeIds{Ids: ids}
 	stream, err := client.GetNodes(context.Background(), message)
 	if err != nil {
