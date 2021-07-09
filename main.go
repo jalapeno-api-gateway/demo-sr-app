@@ -3,17 +3,18 @@ package main
 import (
 	"io"
 	"log"
+	"os"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/request-service"
+	rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto"
 )
 
-func StartApp() {
+func main() {
 	log.Print("Starting SR-App ...")
 	var conn *grpc.ClientConn
-	conn, err := grpc.Dial(":9000", grpc.WithInsecure())
+	conn, err := grpc.Dial(os.Getenv("REQUEST_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Could not connect: %s", err)
 	}

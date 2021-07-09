@@ -19,5 +19,5 @@ forward:
   - 2346:2345
   - 8081:8080
 environment:
-  - REQUEST_SERVICE_ADDRESS=request-service
+  - REQUEST_SERVICE_ADDRESS=jagw-dev-michel:request-service:9000
   

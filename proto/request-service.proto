@@ -1,7 +1,7 @@
 syntax = "proto3";
 package requestservice;
 
-option go_package = "gitlab.ost.ch/ins/jalapeno-api/sr-app/request-service;requestservice";
+option go_package = "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto;requestservice";
 
 message Nodes {
     repeated Node nodes = 1;
