@@ -7,7 +7,8 @@ When the file `request-service/request-service.proto` is updated, this command n
 $ /bin/protoc/bin/protoc --proto_path=./request-service --go_out=./request-service --go_opt=paths=source_relative --go-grpc_out=./request-service --go-grpc_opt=paths=source_relative ./request-service/request-service.proto
 ```
 
-## Settin Up Development Environment
+## Setting Up Development Environment
+Make sure you have setup the [global development environment](https://gitlab.ost.ch/ins/jalapeno-api/request-service/-/wikis/Development-Environment) first.
 
 ### Step 1: Initialize Okteto
 - Clone the repository:
