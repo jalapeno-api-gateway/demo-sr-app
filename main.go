@@ -12,6 +12,7 @@ import (
 )
 
 func GetDataRates(client rsproto.ApiGatewayClient) {
+	log.Printf("---------------------Requesting DataRates---------------------")
 	ips := []string{"10.18.8.53", "10.18.8.54"}
 	message := &rsproto.IPv4Addresses{Ipv4Address: ips}
 	stream, err := client.GetDataRates(context.Background(), message)
