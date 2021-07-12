@@ -11,6 +11,27 @@ import (
 	rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto"
 )
 
+func GetDataRate(client rsproto.ApiGatewayClient) {
+	ips := []string{"10.18.8.53", "10.18.8.54"}
+	message := &rsproto.IPv4Addresses{Ipv4Address: ips}
+	stream, err := client.GetDataRates(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling GetDataRates on RequestService: %s", err)
+	}
+
+	for {
+		dataRate, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("%v.GetDataRates(_) = _, %v", client, err)
+		}
+		log.Println(dataRate)
+	}
+	log.Printf("---------------------All DataRates received---------------------")
+}
+
 func main() {
 	log.Print("Starting SR-App ...")
 	var conn *grpc.ClientConn
