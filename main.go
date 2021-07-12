@@ -11,14 +11,13 @@ import (
 	rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto"
 )
 
-func GetDataRate(client rsproto.ApiGatewayClient) {
+func GetDataRates(client rsproto.ApiGatewayClient) {
 	ips := []string{"10.18.8.53", "10.18.8.54"}
 	message := &rsproto.IPv4Addresses{Ipv4Address: ips}
 	stream, err := client.GetDataRates(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetDataRates on RequestService: %s", err)
 	}
-
 	for {
 		dataRate, err := stream.Recv()
 		if err == io.EOF {
@@ -42,22 +41,24 @@ func main() {
 	defer conn.Close()
 
 	client := rsproto.NewApiGatewayClient(conn)
-	ids := []string{"2_0_0_0000.0000.000a", "2_0_0_0000.0000.0001", "2_0_0_0000.0000.000c"}
-	message := &rsproto.NodeIds{Ids: ids}
-	stream, err := client.GetNodes(context.Background(), message)
-	if err != nil {
-		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
-	}
+	// ids := []string{"2_0_0_0000.0000.000a", "2_0_0_0000.0000.0001", "2_0_0_0000.0000.000c"}
+	// message := &rsproto.NodeIds{Ids: ids}
+	// stream, err := client.GetNodes(context.Background(), message)
+	// if err != nil {
+	// 	log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
+	// }
 
-	for {
-		node, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalf("%v.GetNodes(_) = _, %v", client, err)
-		}
-		log.Println(node)
-	}
-	log.Printf("---------------------All Nodes received---------------------")
+	// for {
+	// 	node, err := stream.Recv()
+	// 	if err == io.EOF {
+	// 		break
+	// 	}
+	// 	if err != nil {
+	// 		log.Fatalf("%v.GetNodes(_) = _, %v", client, err)
+	// 	}
+	// 	log.Println(node)
+	// }
+	// log.Printf("---------------------All Nodes received---------------------")
+
+	GetDataRates(client)
 }
