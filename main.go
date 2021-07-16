@@ -66,5 +66,5 @@ func main() {
 	client := rsproto.NewApiGatewayClient(conn)
 
 	GetNodes(client)
-	//GetDataRates(client)
+	GetDataRates(client)
 }
