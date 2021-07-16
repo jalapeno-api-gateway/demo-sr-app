@@ -18,7 +18,17 @@ message NodeIds {
     repeated string ids = 1;
 }
 
+message IPv4Addresses {
+    repeated string ipv4address = 1;
+}
+
+message DataRate { //in kbit/s
+    int64 dataRate = 1;
+    string ipv4address = 2;
+}
+
 service ApiGateway {
     rpc GetNode(NodeIds) returns (Nodes) {}
     rpc GetNodes(NodeIds) returns (stream Node) {}
+    rpc GetDataRates(IPv4Addresses) returns (stream DataRate) {}
 }
