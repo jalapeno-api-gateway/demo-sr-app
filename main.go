@@ -34,7 +34,7 @@ func GetDataRates(client rsproto.ApiGatewayClient) {
 
 func GetNodes(client rsproto.ApiGatewayClient) {
 	log.Printf("---------------------Requesting Nodes---------------------")
-	ids := []string{"2_0_0_0000.0000.000a", "2_0_0_0000.0000.0001", "2_0_0_0000.0000.000c"}
+	ids := []string{"2_0_0_0000.0000.000a", "2_0_0_0000.0000.0001", "2_0_0_0000.0000.0002", "2_0_0_0000.0000.0003", "2_0_0_0000.0000.0004", "2_0_0_0000.0000.0005", "2_0_0_0000.0000.0006", "2_0_0_0000.0000.0007", "2_0_0_0000.0000.000c"}
 	message := &rsproto.NodeIds{Ids: ids}
 	stream, err := client.GetNodes(context.Background(), message)
 	if err != nil {
@@ -66,5 +66,5 @@ func main() {
 	client := rsproto.NewApiGatewayClient(conn)
 
 	GetNodes(client)
-	GetDataRates(client)
+	//GetDataRates(client)
 }
