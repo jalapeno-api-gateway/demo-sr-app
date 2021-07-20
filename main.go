@@ -1,64 +1,175 @@
 package main
 
 import (
-	// "io"
+	"context"
+	// "encoding/json"
+	"flag"
 	"log"
 	"os"
+	"os/signal"
+	"strings"
+	"sync"
+	"syscall"
 
-	"golang.org/x/net/context"
-	// "google.golang.org/grpc"
-
-	// rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto"
-	"gitlab.ost.ch/ins/jalapeno-api/sr-app/kafka"
+	"github.com/Shopify/sarama"
 )
 
-var lsNodeConsumer *kafka.Consumer
+// Sarama configuration options
+var (
+	brokers  = "10.20.1.24:31133"
+	version  = ""
+	group    = "gateway"
+	topics   = "jalapeno.telemetry"
+	assignor = "roundrobin"
+	oldest   = true
+	verbose  = false
+)
 
-func main() {
-	//Connect to Kafka
-	ctx := context.Background()
+func init() {
+	flag.StringVar(&brokers, "brokers", brokers, "Kafka bootstrap brokers to connect to, as a comma separated list")
+	flag.StringVar(&group, "group", group, "Kafka consumer group definition")
+	flag.StringVar(&version, "version", "2.1.1", "Kafka cluster version")
+	flag.StringVar(&topics, "topics", topics, "Kafka topics to be consumed, as a comma separated list")
+	flag.StringVar(&assignor, "assignor", assignor, "Consumer group partition assignment strategy (range, roundrobin, sticky)")
+	flag.BoolVar(&oldest, "oldest", true, "Kafka consumer consume initial offset from oldest")
+	flag.BoolVar(&verbose, "verbose", false, "Sarama logging")
+	flag.Parse()
+	
+	if len(brokers) == 0 {
+		panic("no Kafka bootstrap brokers defined, please set the -brokers flag")
+	}
 
-	brokerAddress := os.Getenv("BROKER_ADDRESS")
-	lsNodeTopic := "gobmp.parsed.ls_node"
+	if len(topics) == 0 {
+		panic("no topics given to be consumed, please set the -topics flag")
+	}
 
-	lsNodeConsumer = kafka.NewConsumer(ctx, brokerAddress, lsNodeTopic)
-
-	consumeMessages(ctx, *lsNodeConsumer);
-
-	// log.Print("Starting SR-App ...")
-	// var conn *grpc.ClientConn
-	// conn, err := grpc.Dial(os.Getenv("REQUEST_SERVICE_ADDRESS"), grpc.WithInsecure())
-	// if err != nil {
-	// 	log.Fatalf("Could not connect: %s", err)
-	// }
-	// defer conn.Close()
-
-	// client := rsproto.NewApiGatewayClient(conn)
-	// ids := []string{"2_0_0_0000.0000.000a", "2_0_0_0000.0000.0001", "2_0_0_0000.0000.000c"}
-	// message := &rsproto.NodeIds{Ids: ids}
-	// stream, err := client.GetNodes(context.Background(), message)
-	// if err != nil {
-	// 	log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
-	// }
-
-	// for {
-	// 	node, err := stream.Recv()
-	// 	if err == io.EOF {
-	// 		break
-	// 	}
-	// 	if err != nil {
-	// 		log.Fatalf("%v.GetNodes(_) = _, %v", client, err)
-	// 	}
-	// 	log.Println(node)
-	// }
-	// log.Printf("---------------------All Nodes received---------------------")
+	if len(group) == 0 {
+		panic("no Kafka consumer group defined, please set the -group flag")
+	}
 }
 
-func consumeMessages(ctx context.Context, consumer kafka.Consumer) {
-	channel := make(chan []byte)
-	go kafka.Consume(ctx, consumer, channel)
+func main() {
+	log.Println("Starting a new Sarama consumer")
 
-	for msg := range channel {
-		log.Printf("%v\n", msg)
+	if verbose {
+		sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	}
+
+	version, err := sarama.ParseKafkaVersion(version)
+	if err != nil {
+		log.Panicf("Error parsing Kafka version: %v", err)
+	}
+
+	/**
+	 * Construct a new Sarama configuration.
+	 * The Kafka cluster version has to be defined before the consumer/producer is initialized.
+	 */
+	config := sarama.NewConfig()
+	config.Version = version
+
+	switch assignor {
+	case "sticky":
+		config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategySticky
+	case "roundrobin":
+		config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
+	case "range":
+		config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange
+	default:
+		log.Panicf("Unrecognized consumer group partition assignor: %s", assignor)
+	}
+
+	if oldest {
+		config.Consumer.Offsets.Initial = sarama.OffsetOldest
+	}
+
+	/**
+	 * Setup a new Sarama consumer group
+	 */
+	consumer := Consumer{
+		ready: make(chan bool),
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	client, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), group, config)
+	if err != nil {
+		log.Panicf("Error creating consumer group client: %v", err)
+	}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			// `Consume` should be called inside an infinite loop, when a
+			// server-side rebalance happens, the consumer session will need to be
+			// recreated to get the new claims
+			if err := client.Consume(ctx, strings.Split(topics, ","), &consumer); err != nil {
+				log.Panicf("Error from consumer: %v", err)
+			}
+			// check if context was cancelled, signaling that the consumer should stop
+			if ctx.Err() != nil {
+				return
+			}
+			consumer.ready = make(chan bool)
+		}
+	}()
+
+	<-consumer.ready // Await till the consumer has been set up
+	log.Println("Sarama consumer up and running!...")
+
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case <-ctx.Done():
+		log.Println("terminating: context cancelled")
+	case <-sigterm:
+		log.Println("terminating: via signal")
+	}
+	cancel()
+	wg.Wait()
+	if err = client.Close(); err != nil {
+		log.Panicf("Error closing client: %v", err)
+	}
+}
+
+// Consumer represents a Sarama consumer group consumer
+type Consumer struct {
+	ready chan bool
+}
+
+// Setup is run at the beginning of a new session, before ConsumeClaim
+func (consumer *Consumer) Setup(sarama.ConsumerGroupSession) error {
+	// Mark the consumer as ready
+	close(consumer.ready)
+	return nil
+}
+
+// Cleanup is run at the end of a session, once all ConsumeClaim goroutines have exited
+func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+type Telemetry struct {
+	Source string
+}
+
+// ConsumeClaim must start a consumer loop of ConsumerGroupClaim's Messages().
+func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	// NOTE:
+	// Do not move the code below to a goroutine.
+	// The `ConsumeClaim` itself is called within a goroutine, see:
+	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
+	counter := 0
+	for message := range claim.Messages() {
+		log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
+		// if counter == 10 {
+		// 	t := Telemetry{}
+		// 	json.Unmarshal(message.Value, &t)
+		// 	log.Printf("Source: %s\n", t.Source)
+		// }
+		counter++
+		session.MarkMessage(message, "")
+	}
+
+	return nil
 }

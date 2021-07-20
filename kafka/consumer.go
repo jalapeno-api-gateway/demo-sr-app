@@ -1,42 +1,48 @@
-package kafka
+// package kafka
 
-import (
-	"context"
-	"log"
+// import (
+// 	"context"
+// 	"log"
 
-	"github.com/segmentio/kafka-go"
-)
+// 	"github.com/Shopify/sarama"
+// )
 
-type Consumer struct {
-	reader *kafka.Reader
-}
+// type Consumer struct {
+// 	reader *kafka.Reader
+// }
 
-func NewConsumer(ctx context.Context, brokerAddress string, topic string) *Consumer {
-	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{brokerAddress},
-		Topic:     topic,
-	})
+// type Telemetry struct {
+// 	Interface_Name string `json:"interface_name,omitempty"`
+// }
 
-	c := Consumer{reader: reader}
-	return &c
-}
+// func NewConsumer(ctx context.Context, brokerAddress string, topic string) *Consumer {
+// 	reader := kafka.NewReader(kafka.ReaderConfig{
+// 		Brokers:   []string{brokerAddress},
+// 		Topic:     topic,
+// 	})
 
-func Consume(ctx context.Context, c Consumer, channel chan []byte) {
-	for {
-		m, err := c.reader.ReadMessage(ctx)
-		if err != nil {
-			log.Fatal("failed to read messages:", err)
-			break
-		}
-		channel <- m.Value
-	}
-	close(channel)
-}
+// 	c := Consumer{reader: reader}
+// 	return &c
+// }
 
-func ConsumeSingleMessage(ctx context.Context, c Consumer) []byte {
-	m, err := c.reader.ReadMessage(ctx)
-	if err != nil {
-		log.Fatal("failed to write messages:", err)
-	}
-	return m.Value
-}
+// func Consume(ctx context.Context, c Consumer, channel chan Telemetry) {
+// 	for {
+// 		m, err := c.reader.ReadMessage(ctx)
+// 		if err != nil {
+// 			log.Fatal("failed to read messages:", err)
+// 			break
+// 		}
+// 		t := Telemetry{}
+// 		kafka.Unmarshal(m.Value, &t)
+// 		channel <- t
+// 	}
+// 	close(channel)
+// }
+
+// func ConsumeSingleMessage(ctx context.Context, c Consumer) []byte {
+// 	m, err := c.reader.ReadMessage(ctx)
+// 	if err != nil {
+// 		log.Fatal("failed to write messages:", err)
+// 	}
+// 	return m.Value
+// }
