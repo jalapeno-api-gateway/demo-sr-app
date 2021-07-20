@@ -2,9 +2,13 @@
 This application mocks a SR-App by making periodic requests to the Jalapeño API Gateway.
 
 ## gRPC
-When the file `proto/request-service.proto` is updated, this command needs to be run to recompile the code:
+When the file `proto/request-service/request-service.proto` is updated, this command needs to be run to recompile the code:
 ```bash
-$ /bin/protoc/bin/protoc --proto_path=./proto --go_out=./proto --go_opt=paths=source_relative --go-grpc_out=./proto --go-grpc_opt=paths=source_relative ./proto/request-service.proto
+$ protoc --proto_path=./proto/request-service --go_out=./proto/request-service --go_opt=paths=source_relative --go-grpc_out=./proto/request-service --go-grpc_opt=paths=source_relative ./proto/request-service/request-service.proto
+```
+When the file `proto/push-service/push-service.proto` is updated, this command needs to be run to recompile the code:
+```bash
+$ protoc --proto_path=./proto/push-service --go_out=./proto/push-service --go_opt=paths=source_relative --go-grpc_out=./proto/push-service --go-grpc_opt=paths=source_relative ./proto/push-service/push-service.proto
 ```
 
 ## Setting Up Development Environment

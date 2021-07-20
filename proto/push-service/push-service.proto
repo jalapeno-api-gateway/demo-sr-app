@@ -1,0 +1,17 @@
+syntax = "proto3";
+package pushservice;
+
+option go_package = "gitlab.ost.ch/ins/jalapeno-api/push-service/proto/push-service/push-service;pushservice";
+
+message IPv4Addresses {
+    repeated string ipv4address = 1;
+}
+
+message DataRate { //in kbit/s
+    int64 dataRate = 1;
+    string ipv4address = 2;
+}
+
+service PushService {
+    rpc SubscribeToDataRates(IPv4Addresses) returns (stream DataRate) {}
+}
