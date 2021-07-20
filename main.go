@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto"
+	rsproto "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto/request-service"
 )
 
 func GetDataRates(client rsproto.ApiGatewayClient) {
