@@ -18,9 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ApiGatewayClient interface {
-	GetNode(ctx context.Context, in *NodeIds, opts ...grpc.CallOption) (*Nodes, error)
-	GetNodes(ctx context.Context, in *NodeIds, opts ...grpc.CallOption) (ApiGateway_GetNodesClient, error)
-	GetDataRates(ctx context.Context, in *IPv4Addresses, opts ...grpc.CallOption) (ApiGateway_GetDataRatesClient, error)
+	GetLsNodes(ctx context.Context, in *LsNodeRequest, opts ...grpc.CallOption) (ApiGateway_GetLsNodesClient, error)
+	GetLsLinks(ctx context.Context, in *LsLinkRequest, opts ...grpc.CallOption) (ApiGateway_GetLsLinksClient, error)
+	GetDataRates(ctx context.Context, in *DataRateRequest, opts ...grpc.CallOption) (ApiGateway_GetDataRatesClient, error)
 }
 
 type apiGatewayClient struct {
@@ -31,21 +31,12 @@ func NewApiGatewayClient(cc grpc.ClientConnInterface) ApiGatewayClient {
 	return &apiGatewayClient{cc}
 }
 
-func (c *apiGatewayClient) GetNode(ctx context.Context, in *NodeIds, opts ...grpc.CallOption) (*Nodes, error) {
-	out := new(Nodes)
-	err := c.cc.Invoke(ctx, "/requestservice.ApiGateway/GetNode", in, out, opts...)
+func (c *apiGatewayClient) GetLsNodes(ctx context.Context, in *LsNodeRequest, opts ...grpc.CallOption) (ApiGateway_GetLsNodesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[0], "/requestservice.ApiGateway/GetLsNodes", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-func (c *apiGatewayClient) GetNodes(ctx context.Context, in *NodeIds, opts ...grpc.CallOption) (ApiGateway_GetNodesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[0], "/requestservice.ApiGateway/GetNodes", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &apiGatewayGetNodesClient{stream}
+	x := &apiGatewayGetLsNodesClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -55,25 +46,57 @@ func (c *apiGatewayClient) GetNodes(ctx context.Context, in *NodeIds, opts ...gr
 	return x, nil
 }
 
-type ApiGateway_GetNodesClient interface {
-	Recv() (*Node, error)
+type ApiGateway_GetLsNodesClient interface {
+	Recv() (*LsNode, error)
 	grpc.ClientStream
 }
 
-type apiGatewayGetNodesClient struct {
+type apiGatewayGetLsNodesClient struct {
 	grpc.ClientStream
 }
 
-func (x *apiGatewayGetNodesClient) Recv() (*Node, error) {
-	m := new(Node)
+func (x *apiGatewayGetLsNodesClient) Recv() (*LsNode, error) {
+	m := new(LsNode)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *apiGatewayClient) GetDataRates(ctx context.Context, in *IPv4Addresses, opts ...grpc.CallOption) (ApiGateway_GetDataRatesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[1], "/requestservice.ApiGateway/GetDataRates", opts...)
+func (c *apiGatewayClient) GetLsLinks(ctx context.Context, in *LsLinkRequest, opts ...grpc.CallOption) (ApiGateway_GetLsLinksClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[1], "/requestservice.ApiGateway/GetLsLinks", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &apiGatewayGetLsLinksClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ApiGateway_GetLsLinksClient interface {
+	Recv() (*LsLink, error)
+	grpc.ClientStream
+}
+
+type apiGatewayGetLsLinksClient struct {
+	grpc.ClientStream
+}
+
+func (x *apiGatewayGetLsLinksClient) Recv() (*LsLink, error) {
+	m := new(LsLink)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *apiGatewayClient) GetDataRates(ctx context.Context, in *DataRateRequest, opts ...grpc.CallOption) (ApiGateway_GetDataRatesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[2], "/requestservice.ApiGateway/GetDataRates", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +131,9 @@ func (x *apiGatewayGetDataRatesClient) Recv() (*DataRate, error) {
 // All implementations must embed UnimplementedApiGatewayServer
 // for forward compatibility
 type ApiGatewayServer interface {
-	GetNode(context.Context, *NodeIds) (*Nodes, error)
-	GetNodes(*NodeIds, ApiGateway_GetNodesServer) error
-	GetDataRates(*IPv4Addresses, ApiGateway_GetDataRatesServer) error
+	GetLsNodes(*LsNodeRequest, ApiGateway_GetLsNodesServer) error
+	GetLsLinks(*LsLinkRequest, ApiGateway_GetLsLinksServer) error
+	GetDataRates(*DataRateRequest, ApiGateway_GetDataRatesServer) error
 	mustEmbedUnimplementedApiGatewayServer()
 }
 
@@ -118,13 +141,13 @@ type ApiGatewayServer interface {
 type UnimplementedApiGatewayServer struct {
 }
 
-func (UnimplementedApiGatewayServer) GetNode(context.Context, *NodeIds) (*Nodes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNode not implemented")
+func (UnimplementedApiGatewayServer) GetLsNodes(*LsNodeRequest, ApiGateway_GetLsNodesServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetLsNodes not implemented")
 }
-func (UnimplementedApiGatewayServer) GetNodes(*NodeIds, ApiGateway_GetNodesServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetNodes not implemented")
+func (UnimplementedApiGatewayServer) GetLsLinks(*LsLinkRequest, ApiGateway_GetLsLinksServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetLsLinks not implemented")
 }
-func (UnimplementedApiGatewayServer) GetDataRates(*IPv4Addresses, ApiGateway_GetDataRatesServer) error {
+func (UnimplementedApiGatewayServer) GetDataRates(*DataRateRequest, ApiGateway_GetDataRatesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDataRates not implemented")
 }
 func (UnimplementedApiGatewayServer) mustEmbedUnimplementedApiGatewayServer() {}
@@ -140,47 +163,50 @@ func RegisterApiGatewayServer(s grpc.ServiceRegistrar, srv ApiGatewayServer) {
 	s.RegisterService(&ApiGateway_ServiceDesc, srv)
 }
 
-func _ApiGateway_GetNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NodeIds)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApiGatewayServer).GetNode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/requestservice.ApiGateway/GetNode",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiGatewayServer).GetNode(ctx, req.(*NodeIds))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ApiGateway_GetNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NodeIds)
+func _ApiGateway_GetLsNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(LsNodeRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ApiGatewayServer).GetNodes(m, &apiGatewayGetNodesServer{stream})
+	return srv.(ApiGatewayServer).GetLsNodes(m, &apiGatewayGetLsNodesServer{stream})
 }
 
-type ApiGateway_GetNodesServer interface {
-	Send(*Node) error
+type ApiGateway_GetLsNodesServer interface {
+	Send(*LsNode) error
 	grpc.ServerStream
 }
 
-type apiGatewayGetNodesServer struct {
+type apiGatewayGetLsNodesServer struct {
 	grpc.ServerStream
 }
 
-func (x *apiGatewayGetNodesServer) Send(m *Node) error {
+func (x *apiGatewayGetLsNodesServer) Send(m *LsNode) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _ApiGateway_GetLsLinks_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(LsLinkRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ApiGatewayServer).GetLsLinks(m, &apiGatewayGetLsLinksServer{stream})
+}
+
+type ApiGateway_GetLsLinksServer interface {
+	Send(*LsLink) error
+	grpc.ServerStream
+}
+
+type apiGatewayGetLsLinksServer struct {
+	grpc.ServerStream
+}
+
+func (x *apiGatewayGetLsLinksServer) Send(m *LsLink) error {
 	return x.ServerStream.SendMsg(m)
 }
 
 func _ApiGateway_GetDataRates_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(IPv4Addresses)
+	m := new(DataRateRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -206,16 +232,16 @@ func (x *apiGatewayGetDataRatesServer) Send(m *DataRate) error {
 var ApiGateway_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "requestservice.ApiGateway",
 	HandlerType: (*ApiGatewayServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetNode",
-			Handler:    _ApiGateway_GetNode_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "GetNodes",
-			Handler:       _ApiGateway_GetNodes_Handler,
+			StreamName:    "GetLsNodes",
+			Handler:       _ApiGateway_GetLsNodes_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetLsLinks",
+			Handler:       _ApiGateway_GetLsLinks_Handler,
 			ServerStreams: true,
 		},
 		{
@@ -224,5 +250,5 @@ var ApiGateway_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "request-service.proto",
+	Metadata: "requestservice.proto",
 }

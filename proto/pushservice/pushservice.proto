@@ -1,0 +1,55 @@
+syntax = "proto3";
+package pushservice;
+
+option go_package = "gitlab.ost.ch/ins/jalapeno-api/push-service/proto/pushservice";
+
+message LsNode {
+    string key = 1;
+    string name = 2;
+    int32 asn = 3;
+    string router_ip = 4;
+}
+
+message LsNodeSubscription {
+    repeated string keys = 1;
+}
+
+message LsNodeEvent {
+    string action = 1;
+    string key = 2;
+    LsNode lsNode = 3;
+}
+
+message LsLink {
+    string key = 1;
+	string router_ip = 2;
+	string peer_ip = 3;
+	string localLink_ip = 4;
+    string remoteLink_ip = 5;
+    int32 igp_metric = 6;
+}
+
+message LsLinkSubscription {
+    repeated string keys = 1;
+}
+
+message LsLinkEvent {
+    string action = 1;
+    string key = 2;
+    LsLink lsLink = 3;
+}
+
+message DataRate {
+    string ipv4address = 1;
+    int64 dataRate = 2;
+}
+
+message DataRateSubscription {
+    repeated string ipv4addresses = 1;
+}
+
+service PushService {
+    rpc SubscribeToDataRates(DataRateSubscription) returns (stream DataRate) {}
+    rpc SubscribeToLsNodes(LsNodeSubscription) returns (stream LsNodeEvent) {}
+    rpc SubscribeToLsLinks(LsLinkSubscription) returns (stream LsLinkEvent) {}
+}
