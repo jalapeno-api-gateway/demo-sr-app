@@ -29,7 +29,7 @@ name: sr-app
 autocreate: true
 image: okteto/golang:1
 command: bash
-namespace: jagw-dev-<namespace-name>
+namespace: <namespace-name>
 securityContext:
   capabilities:
     add:
