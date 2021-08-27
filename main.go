@@ -58,9 +58,17 @@ func main() {
 	input.Scan()
 	SubscribeToSpecificLinks(psClient)
 
-	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	// input.Scan()
+	// SubscribeToDataRates(psClient)
+
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO TOTALPACKETSSENT OF SPECIFIC IPV4ADDRESSES")
+	// input.Scan()
+	// SubscribeToTotalPacketsSent(psClient)
+
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO TOTALPACKETSRECEIVED OF SPECIFIC IPV4ADDRESSES")
 	input.Scan()
-	SubscribeToDataRates(psClient)
+	SubscribeToTotalPacketsReceived(psClient)
 }
 
 func GetDataRates(client requestservice.ApiGatewayClient) {
@@ -121,6 +129,80 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
 		}
 		printDataRateFromPushService(dataRate)
+	}
+	log.Print("--------------------")
+}
+
+func SubscribeToTotalPacketsSent(client pushservice.PushServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To TotalPacketsSent")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips}
+	stream, err := client.SubscribeToTotalPacketsSent(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToTotalPacketsSent on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
+	for {
+		totalPacketsSent, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if ctx.Err() != nil {
+				break
+			}
+			log.Fatalf("%v.SubscribeToTotalPacketsSent(_) = _, %v", client, err)
+		}
+		printTotalPacketsSent(totalPacketsSent)
+	}
+	log.Print("--------------------")
+}
+
+func SubscribeToTotalPacketsReceived(client pushservice.PushServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To TotalPacketsReceived")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips}
+	stream, err := client.SubscribeToTotalPacketsReceived(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToTotalPacketsReceived on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
+	for {
+		totalPacketsSent, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if ctx.Err() != nil {
+				break
+			}
+			log.Fatalf("%v.SubscribeToTotalPacketsReceived(_) = _, %v", client, err)
+		}
+		printTotalPacketsReceived(totalPacketsSent)
 	}
 	log.Print("--------------------")
 }
@@ -308,6 +390,17 @@ func printDataRateFromPushService(dataRateEvent *pushservice.DataRateEvent) {
 	log.Printf("  DataRate: %d", dataRateEvent.DataRate.DataRate)
 }
 
+func printTotalPacketsSent(telemetryEvent *pushservice.TelemetryEvent) {
+	log.Printf(">>> Received TotalPacketsSent\n")
+	log.Printf("  Ipv4Address: %s", telemetryEvent.Key)
+	log.Printf("  TotalPacketsSent: %d", telemetryEvent.Value)
+}
+
+func printTotalPacketsReceived(telemetryEvent *pushservice.TelemetryEvent) {
+	log.Printf(">>> Received TotalPacketsReceived\n")
+	log.Printf("  Ipv4Address: %s", telemetryEvent.Key)
+	log.Printf("  TotalPacketsReceived: %d", telemetryEvent.Value)
+}
 func allowUserToCancel(cancelled chan bool) {
 	input := bufio.NewScanner(os.Stdin)
 	fmt.Print("Press 'Enter' to cancel subscription")

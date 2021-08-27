@@ -21,6 +21,8 @@ type PushServiceClient interface {
 	SubscribeToDataRates(ctx context.Context, in *DataRateSubscription, opts ...grpc.CallOption) (PushService_SubscribeToDataRatesClient, error)
 	SubscribeToLsNodes(ctx context.Context, in *LsNodeSubscription, opts ...grpc.CallOption) (PushService_SubscribeToLsNodesClient, error)
 	SubscribeToLsLinks(ctx context.Context, in *LsLinkSubscription, opts ...grpc.CallOption) (PushService_SubscribeToLsLinksClient, error)
+	SubscribeToTotalPacketsSent(ctx context.Context, in *TelemetrySubscription, opts ...grpc.CallOption) (PushService_SubscribeToTotalPacketsSentClient, error)
+	SubscribeToTotalPacketsReceived(ctx context.Context, in *TelemetrySubscription, opts ...grpc.CallOption) (PushService_SubscribeToTotalPacketsReceivedClient, error)
 }
 
 type pushServiceClient struct {
@@ -127,6 +129,70 @@ func (x *pushServiceSubscribeToLsLinksClient) Recv() (*LsLinkEvent, error) {
 	return m, nil
 }
 
+func (c *pushServiceClient) SubscribeToTotalPacketsSent(ctx context.Context, in *TelemetrySubscription, opts ...grpc.CallOption) (PushService_SubscribeToTotalPacketsSentClient, error) {
+	stream, err := c.cc.NewStream(ctx, &PushService_ServiceDesc.Streams[3], "/pushservice.PushService/SubscribeToTotalPacketsSent", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pushServiceSubscribeToTotalPacketsSentClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type PushService_SubscribeToTotalPacketsSentClient interface {
+	Recv() (*TelemetryEvent, error)
+	grpc.ClientStream
+}
+
+type pushServiceSubscribeToTotalPacketsSentClient struct {
+	grpc.ClientStream
+}
+
+func (x *pushServiceSubscribeToTotalPacketsSentClient) Recv() (*TelemetryEvent, error) {
+	m := new(TelemetryEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *pushServiceClient) SubscribeToTotalPacketsReceived(ctx context.Context, in *TelemetrySubscription, opts ...grpc.CallOption) (PushService_SubscribeToTotalPacketsReceivedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &PushService_ServiceDesc.Streams[4], "/pushservice.PushService/SubscribeToTotalPacketsReceived", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &pushServiceSubscribeToTotalPacketsReceivedClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type PushService_SubscribeToTotalPacketsReceivedClient interface {
+	Recv() (*TelemetryEvent, error)
+	grpc.ClientStream
+}
+
+type pushServiceSubscribeToTotalPacketsReceivedClient struct {
+	grpc.ClientStream
+}
+
+func (x *pushServiceSubscribeToTotalPacketsReceivedClient) Recv() (*TelemetryEvent, error) {
+	m := new(TelemetryEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // PushServiceServer is the server API for PushService service.
 // All implementations must embed UnimplementedPushServiceServer
 // for forward compatibility
@@ -134,6 +200,8 @@ type PushServiceServer interface {
 	SubscribeToDataRates(*DataRateSubscription, PushService_SubscribeToDataRatesServer) error
 	SubscribeToLsNodes(*LsNodeSubscription, PushService_SubscribeToLsNodesServer) error
 	SubscribeToLsLinks(*LsLinkSubscription, PushService_SubscribeToLsLinksServer) error
+	SubscribeToTotalPacketsSent(*TelemetrySubscription, PushService_SubscribeToTotalPacketsSentServer) error
+	SubscribeToTotalPacketsReceived(*TelemetrySubscription, PushService_SubscribeToTotalPacketsReceivedServer) error
 	mustEmbedUnimplementedPushServiceServer()
 }
 
@@ -149,6 +217,12 @@ func (UnimplementedPushServiceServer) SubscribeToLsNodes(*LsNodeSubscription, Pu
 }
 func (UnimplementedPushServiceServer) SubscribeToLsLinks(*LsLinkSubscription, PushService_SubscribeToLsLinksServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeToLsLinks not implemented")
+}
+func (UnimplementedPushServiceServer) SubscribeToTotalPacketsSent(*TelemetrySubscription, PushService_SubscribeToTotalPacketsSentServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToTotalPacketsSent not implemented")
+}
+func (UnimplementedPushServiceServer) SubscribeToTotalPacketsReceived(*TelemetrySubscription, PushService_SubscribeToTotalPacketsReceivedServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToTotalPacketsReceived not implemented")
 }
 func (UnimplementedPushServiceServer) mustEmbedUnimplementedPushServiceServer() {}
 
@@ -226,6 +300,48 @@ func (x *pushServiceSubscribeToLsLinksServer) Send(m *LsLinkEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _PushService_SubscribeToTotalPacketsSent_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TelemetrySubscription)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PushServiceServer).SubscribeToTotalPacketsSent(m, &pushServiceSubscribeToTotalPacketsSentServer{stream})
+}
+
+type PushService_SubscribeToTotalPacketsSentServer interface {
+	Send(*TelemetryEvent) error
+	grpc.ServerStream
+}
+
+type pushServiceSubscribeToTotalPacketsSentServer struct {
+	grpc.ServerStream
+}
+
+func (x *pushServiceSubscribeToTotalPacketsSentServer) Send(m *TelemetryEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _PushService_SubscribeToTotalPacketsReceived_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TelemetrySubscription)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PushServiceServer).SubscribeToTotalPacketsReceived(m, &pushServiceSubscribeToTotalPacketsReceivedServer{stream})
+}
+
+type PushService_SubscribeToTotalPacketsReceivedServer interface {
+	Send(*TelemetryEvent) error
+	grpc.ServerStream
+}
+
+type pushServiceSubscribeToTotalPacketsReceivedServer struct {
+	grpc.ServerStream
+}
+
+func (x *pushServiceSubscribeToTotalPacketsReceivedServer) Send(m *TelemetryEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // PushService_ServiceDesc is the grpc.ServiceDesc for PushService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -247,6 +363,16 @@ var PushService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SubscribeToLsLinks",
 			Handler:       _PushService_SubscribeToLsLinks_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeToTotalPacketsSent",
+			Handler:       _PushService_SubscribeToTotalPacketsSent_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeToTotalPacketsReceived",
+			Handler:       _PushService_SubscribeToTotalPacketsReceived_Handler,
 			ServerStreams: true,
 		},
 	},

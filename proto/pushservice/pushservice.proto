@@ -46,7 +46,7 @@ message DataRate {
 
 message DataRateEvent {
     string action = 1;
-    string key = 2;
+    string key = 2; //key is ipv4address
     DataRate dataRate = 3;
 }
 
@@ -54,8 +54,20 @@ message DataRateSubscription {
     repeated string ipv4addresses = 1;
 }
 
+message TelemetrySubscription {
+    repeated string ipv4addresses = 1;
+}
+
+message TelemetryEvent {
+    string action = 1;
+    repeated string key = 2;
+    repeated int64 value = 3; 
+}
+
 service PushService {
     rpc SubscribeToDataRates(DataRateSubscription) returns (stream DataRateEvent) {}
     rpc SubscribeToLsNodes(LsNodeSubscription) returns (stream LsNodeEvent) {}
     rpc SubscribeToLsLinks(LsLinkSubscription) returns (stream LsLinkEvent) {}
+    rpc SubscribeToTotalPacketsSent(TelemetrySubscription) returns (stream TelemetryEvent) {}
+    rpc SubscribeToTotalPacketsReceived(TelemetrySubscription) returns (stream TelemetryEvent) {}
 }
