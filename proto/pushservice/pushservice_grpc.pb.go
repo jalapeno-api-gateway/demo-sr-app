@@ -47,7 +47,7 @@ func (c *pushServiceClient) SubscribeToDataRates(ctx context.Context, in *DataRa
 }
 
 type PushService_SubscribeToDataRatesClient interface {
-	Recv() (*DataRate, error)
+	Recv() (*DataRateEvent, error)
 	grpc.ClientStream
 }
 
@@ -55,8 +55,8 @@ type pushServiceSubscribeToDataRatesClient struct {
 	grpc.ClientStream
 }
 
-func (x *pushServiceSubscribeToDataRatesClient) Recv() (*DataRate, error) {
-	m := new(DataRate)
+func (x *pushServiceSubscribeToDataRatesClient) Recv() (*DataRateEvent, error) {
+	m := new(DataRateEvent)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func _PushService_SubscribeToDataRates_Handler(srv interface{}, stream grpc.Serv
 }
 
 type PushService_SubscribeToDataRatesServer interface {
-	Send(*DataRate) error
+	Send(*DataRateEvent) error
 	grpc.ServerStream
 }
 
@@ -180,7 +180,7 @@ type pushServiceSubscribeToDataRatesServer struct {
 	grpc.ServerStream
 }
 
-func (x *pushServiceSubscribeToDataRatesServer) Send(m *DataRate) error {
+func (x *pushServiceSubscribeToDataRatesServer) Send(m *DataRateEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 

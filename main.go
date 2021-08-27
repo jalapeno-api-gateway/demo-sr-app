@@ -45,22 +45,22 @@ func main() {
 	fmt.Print("Press 'Enter' to: REQUEST THREE SPECIFIC NODES")
 	input.Scan()
 	GetSpecificNodes(rsClient)
-	
+
 	fmt.Print("Press 'Enter' to: REQUEST DATA RATES OF SPECIFIC IPV4ADDRESSES")
 	input.Scan()
 	GetDataRates(rsClient)
-	
+
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
 	input.Scan()
 	SubscribeToAllLinks(psClient)
-	
+
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINKS")
 	input.Scan()
 	SubscribeToSpecificLinks(psClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
-	// input.Scan()
-	// SubscribeToDataRates(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	input.Scan()
+	SubscribeToDataRates(psClient)
 }
 
 func GetDataRates(client requestservice.ApiGatewayClient) {
@@ -91,21 +91,38 @@ func GetDataRates(client requestservice.ApiGatewayClient) {
 func SubscribeToDataRates(client pushservice.PushServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To Specific DataRates")
-	ips := []string{"10.18.8.53", "10.18.8.54"}
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
 	message := &pushservice.DataRateSubscription{Ipv4Addresses: ips}
 	stream, err := client.SubscribeToDataRates(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToDataRates on PushService: %s", err)
 	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
 	for {
 		dataRate, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("%v.GetDataRates(_) = _, %v", client, err)
+			if ctx.Err() != nil {
+				break
+			}
+			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
 		}
-		log.Println(dataRate)
+		// print(dataRate.Ipv4Address)
+		// print(dataRate.DataRate)
+		printDataRateFromPushService(dataRate)
 	}
 	log.Print("--------------------")
 }
@@ -135,7 +152,7 @@ func SubscribeToSpecificLinks(client pushservice.PushServiceClient) {
 	cancelled := make(chan bool, 1)
 	go allowUserToCancel(cancelled)
 	go func() {
-		<- cancelled
+		<-cancelled
 		cancel()
 	}()
 
@@ -171,7 +188,7 @@ func SubscribeToAllLinks(client pushservice.PushServiceClient) {
 	cancelled := make(chan bool, 1)
 	go allowUserToCancel(cancelled)
 	go func() {
-		<- cancelled
+		<-cancelled
 		cancel()
 	}()
 
@@ -285,6 +302,12 @@ func printDataRate(dataRate *requestservice.DataRate) {
 	log.Printf(">>> Received DataRate\n")
 	log.Printf("  Ipv4Address: %s", dataRate.Ipv4Address)
 	log.Printf("  DataRate: %d", dataRate.DataRate)
+}
+
+func printDataRateFromPushService(dataRateEvent *pushservice.DataRateEvent) {
+	log.Printf(">>> Received DataRate\n")
+	log.Printf("  Ipv4Address: %s", dataRateEvent.Key)
+	log.Printf("  DataRate: %d", dataRateEvent.DataRate.DataRate)
 }
 
 func allowUserToCancel(cancelled chan bool) {
