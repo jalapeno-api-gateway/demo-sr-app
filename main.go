@@ -120,8 +120,6 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 			}
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
 		}
-		// print(dataRate.Ipv4Address)
-		// print(dataRate.DataRate)
 		printDataRateFromPushService(dataRate)
 	}
 	log.Print("--------------------")
