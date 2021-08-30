@@ -58,13 +58,13 @@ func main() {
 	input.Scan()
 	SubscribeToSpecificLinks(psClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
-	// input.Scan()
-	// SubscribeToDataRates(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	input.Scan()
+	SubscribeToDataRates(psClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO TOTALPACKETSSENT OF SPECIFIC IPV4ADDRESSES")
-	// input.Scan()
-	// SubscribeToTotalPacketsSent(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO TOTALPACKETSSENT OF SPECIFIC IPV4ADDRESSES")
+	input.Scan()
+	SubscribeToTotalPacketsSent(psClient)
 
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO TOTALPACKETSRECEIVED OF SPECIFIC IPV4ADDRESSES")
 	input.Scan()
@@ -102,7 +102,6 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
-
 	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
 	message := &pushservice.DataRateSubscription{Ipv4Addresses: ips}
 	stream, err := client.SubscribeToDataRates(context.Background(), message)
@@ -114,6 +113,7 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 	go allowUserToCancel(cancelled)
 	go func() {
 		<-cancelled
+		log.Print("CANCEL SUBSCRIPTION !!!!!!!!!!!")
 		cancel()
 	}()
 
@@ -123,7 +123,8 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 			break
 		}
 		if err != nil {
-			if ctx.Err() != nil {
+			if ctx.Done() != nil { //to fix
+				log.Print("BREAK FOR STATEMENT !!!!")
 				break
 			}
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
