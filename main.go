@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	// "unsafe"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -42,25 +44,37 @@ func main() {
 	input.Scan()
 	GetAllNodes(rsClient)
 
-	fmt.Print("Press 'Enter' to: REQUEST THREE SPECIFIC NODES")
-	input.Scan()
-	GetSpecificNodes(rsClient)
+	// fmt.Print("Press 'Enter' to: REQUEST THREE SPECIFIC NODES")
+	// input.Scan()
+	// GetSpecificNodes(rsClient)
 
-	fmt.Print("Press 'Enter' to: REQUEST DATA RATES OF SPECIFIC IPV4ADDRESSES")
-	input.Scan()
-	GetDataRates(rsClient)
+	// fmt.Print("Press 'Enter' to: REQUEST DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	// input.Scan()
+	// GetDataRates(rsClient)
 
-	fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
-	input.Scan()
-	SubscribeToAllLinks(psClient)
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
+	// input.Scan()
+	// SubscribeToAllLinks(psClient)
 
-	fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINKS")
-	input.Scan()
-	SubscribeToSpecificLinks(psClient)
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINKS")
+	// input.Scan()
+	// SubscribeToSpecificLinks(psClient)
 
-	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	// input.Scan()
+	// SubscribeToDataRates(psClient)
+
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO PACKETS SENT AND RECEIVED OF SPECIFIC IPV4ADDRESSES")
+	// input.Scan()
+	// SubscribeToPacketsSentAndReceived(psClient)
+	
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATE DIRECTLY")
 	input.Scan()
-	SubscribeToDataRates(psClient)
+	SubscribeToDataRateDirectly(psClient)
+
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO EVERYTHING")
+	// input.Scan()
+	// SubscribeToEverything(psClient)
 }
 
 func GetDataRates(client requestservice.ApiGatewayClient) {
@@ -94,12 +108,98 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
-
 	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
-	message := &pushservice.DataRateSubscription{Ipv4Addresses: ips}
-	stream, err := client.SubscribeToDataRates(context.Background(), message)
+	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: []string{"DataRate"}}
+	stream, err := client.SubscribeToTelemetryData(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToDataRates on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		log.Print("CANCEL SUBSCRIPTION !!!!!!!!!!!")
+		cancel()
+	}()
+
+	for {
+		event, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if ctx.Done() != nil { //to fix
+				log.Print("BREAK FOR STATEMENT !!!!")
+				break
+			}
+			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
+		}
+		for _, elem := range event.Data {
+			if elem.PropertyName == "DataRate" {
+				var dataRate int64
+				err := json.Unmarshal(elem.Value, &dataRate)
+				if err != nil {
+					log.Fatal("Could not unmarshal DataRate")
+				}
+				printDataRateFromPushService(event.Ipv4Address, dataRate)
+			}
+		}
+	}
+	log.Print("--------------------")
+}
+
+func SubscribeToDataRateDirectly(client pushservice.PushServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To DataRate Directly")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	ip := "10.18.8.53"
+	message := &pushservice.DataRateSubscription{Ipv4Address: ip}
+	stream, err := client.SubscribeToDataRate(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToDataRateDirectly on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		log.Print("CANCEL SUBSCRIPTION !!!!!!!!!!!")
+		cancel()
+	}()
+
+	for {
+		event, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if ctx.Done() != nil { //to fix
+				log.Print("BREAK FOR STATEMENT !!!!")
+				break
+			}
+			log.Fatalf("%v.SubscribeToDataRateDirectly(_) = _, %v", client, err)
+		}
+		
+		printDataRateFromPushService(ip, event.DataRate)
+	}
+	log.Print("--------------------")
+}
+
+func SubscribeToPacketsSentAndReceived(client pushservice.PushServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To PacketsSent")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: []string{"PacketsSent", "PacketsReceived"}}
+	stream, err := client.SubscribeToTelemetryData(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToPacketsSentAndReceived on PushService: %s", err)
 	}
 
 	cancelled := make(chan bool, 1)
@@ -110,7 +210,7 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 	}()
 
 	for {
-		dataRate, err := stream.Recv()
+		event, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
@@ -118,9 +218,98 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 			if ctx.Err() != nil {
 				break
 			}
-			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
+			log.Fatalf("%v.SubscribeToPacketsSentAndReceived(_) = _, %v", client, err)
 		}
-		printDataRateFromPushService(dataRate)
+		for _, elem := range event.Data {
+			if elem.PropertyName == "PacketsSent" {
+				var packetsSent int64
+				err := json.Unmarshal(elem.Value, &packetsSent)
+				if err != nil {
+					log.Fatal("Could not unmarshal PacketsSent")
+				}
+				printPacketsSent(event.Ipv4Address, packetsSent)
+			} else if elem.PropertyName == "PacketsReceived" {
+				var packetsReceived int64
+				err := json.Unmarshal(elem.Value, &packetsReceived)
+				if err != nil {
+					log.Fatal("Could not unmarshal PacketsReceived")
+				}
+				printPacketsReceived(event.Ipv4Address, packetsReceived)
+			}
+		}
+	}
+	log.Print("--------------------")
+}
+
+func SubscribeToEverything(client pushservice.PushServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To Everything")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	message := &pushservice.TelemetrySubscription{}
+	stream, err := client.SubscribeToTelemetryData(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToEverything on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
+	for {
+		event, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if ctx.Err() != nil {
+				break
+			}
+			log.Fatalf("%v.SubscribeToEverything(_) = _, %v", client, err)
+		}
+		for _, elem := range event.Data {
+			if elem.PropertyName == "PacketsSent" {
+				var packetsSent int64
+				err := json.Unmarshal(elem.Value, &packetsSent)
+				if err != nil {
+					log.Fatal("Could not unmarshal PacketsSent")
+				}
+				printPacketsSent(event.Ipv4Address, packetsSent)
+			} else if elem.PropertyName == "PacketsReceived" {
+				var packetsReceived int64
+				err := json.Unmarshal(elem.Value, &packetsReceived)
+				if err != nil {
+					log.Fatal("Could not unmarshal PacketsReceived")
+				}
+				printPacketsReceived(event.Ipv4Address, packetsReceived)
+			} else if elem.PropertyName == "DataRate" {
+				var dataRate int64
+				err := json.Unmarshal(elem.Value, &dataRate)
+				if err != nil {
+					log.Fatal("Could not unmarshal DataRate")
+				}
+				printDataRateFromPushService(event.Ipv4Address, dataRate)
+			} else if elem.PropertyName == "State" {
+				var state string
+				err := json.Unmarshal(elem.Value, &state)
+				if err != nil {
+					log.Fatal("Could not unmarshal State")
+				}
+				printState(event.Ipv4Address, state)
+			} else if elem.PropertyName == "LastStateTransitionTime" {
+				var lastStateTransitionTime int64
+				err := json.Unmarshal(elem.Value, &lastStateTransitionTime)
+				if err != nil {
+					log.Fatal("Could not unmarshal LastStateTransitionTime")
+				}
+				printLastStateTransitionTime(event.Ipv4Address, lastStateTransitionTime)
+			}
+		}
 	}
 	log.Print("--------------------")
 }
@@ -302,10 +491,34 @@ func printDataRate(dataRate *requestservice.DataRate) {
 	log.Printf("  DataRate: %d", dataRate.DataRate)
 }
 
-func printDataRateFromPushService(dataRateEvent *pushservice.DataRateEvent) {
+func printDataRateFromPushService(ip string, dataRate int64) {
 	log.Printf(">>> Received DataRate\n")
-	log.Printf("  Ipv4Address: %s", dataRateEvent.Key)
-	log.Printf("  DataRate: %d", dataRateEvent.DataRate.DataRate)
+	log.Printf("  Ipv4Address: %s", ip)
+	log.Printf("  DataRate: %d", dataRate)
+}
+
+func printPacketsSent(ip string, packetsSent int64) {
+	log.Printf(">>> Received PacketsSent\n")
+	log.Printf("  Ipv4Address: %s", ip)
+	log.Printf("  PacketsSent: %d", packetsSent)
+}
+
+func printPacketsReceived(ip string, packetsReceived int64) {
+	log.Printf(">>> Received PacketsReceived\n")
+	log.Printf("  Ipv4Address: %s", ip)
+	log.Printf("  PacketsReceived: %d", packetsReceived)
+}
+
+func printState(ip string, state string) {
+	log.Printf(">>> Received State\n")
+	log.Printf("  Ipv4Address: %s", ip)
+	log.Printf("  State: %s", state)
+}
+
+func printLastStateTransitionTime(ip string, lastStateTransitionTime int64) {
+	log.Printf(">>> Received LastStateTransitionTime\n")
+	log.Printf("  Ipv4Address: %s", ip)
+	log.Printf("  LastStateTransitionTime: %d", lastStateTransitionTime)
 }
 
 func allowUserToCancel(cancelled chan bool) {

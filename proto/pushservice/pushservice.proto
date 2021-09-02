@@ -39,23 +39,32 @@ message LsLinkEvent {
     LsLink lsLink = 3;
 }
 
-message DataRate {
-    string ipv4address = 1;
-    int64 dataRate = 2;
+message TelemetrySubscription {
+    repeated string ipv4addresses = 1;
+    repeated string propertyNames = 2;
 }
 
-message DataRateEvent {
-    string action = 1;
-    string key = 2;
-    DataRate dataRate = 3;
+message TelemetryEvent {
+    string ipv4address = 1;
+    repeated TelemetryData data = 2;
+}
+
+message TelemetryData {
+    string propertyName = 1;
+    bytes value = 2;
 }
 
 message DataRateSubscription {
-    repeated string ipv4addresses = 1;
+    string ipv4address = 1;
+}
+
+message DataRate {
+    int64 dataRate = 1;
 }
 
 service PushService {
-    rpc SubscribeToDataRates(DataRateSubscription) returns (stream DataRateEvent) {}
     rpc SubscribeToLsNodes(LsNodeSubscription) returns (stream LsNodeEvent) {}
     rpc SubscribeToLsLinks(LsLinkSubscription) returns (stream LsLinkEvent) {}
+    rpc SubscribeToTelemetryData(TelemetrySubscription) returns (stream TelemetryEvent) {}
+    rpc SubscribeToDataRate(DataRateSubscription) returns (stream DataRate) {}
 }
