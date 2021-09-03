@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+
 	// "unsafe"
 
 	"golang.org/x/net/context"
@@ -40,9 +41,9 @@ func main() {
 
 	input := bufio.NewScanner(os.Stdin)
 
-	fmt.Print("Press any key to: REQUEST ALL NODES")
-	input.Scan()
-	GetAllNodes(rsClient)
+	// fmt.Print("Press any key to: REQUEST ALL NODES")
+	// input.Scan()
+	// GetAllNodes(rsClient)
 
 	// fmt.Print("Press 'Enter' to: REQUEST THREE SPECIFIC NODES")
 	// input.Scan()
@@ -52,9 +53,9 @@ func main() {
 	// input.Scan()
 	// GetDataRates(rsClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
-	// input.Scan()
-	// SubscribeToAllLinks(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
+	input.Scan()
+	SubscribeToAllLinks(psClient)
 
 	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINKS")
 	// input.Scan()
@@ -67,7 +68,7 @@ func main() {
 	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO PACKETS SENT AND RECEIVED OF SPECIFIC IPV4ADDRESSES")
 	// input.Scan()
 	// SubscribeToPacketsSentAndReceived(psClient)
-	
+
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATE DIRECTLY")
 	input.Scan()
 	SubscribeToDataRateDirectly(psClient)
@@ -83,6 +84,7 @@ func GetDataRates(client requestservice.ApiGatewayClient) {
 	ips := []string{
 		"10.18.8.53",
 		"10.18.8.54",
+		"invalid",
 	}
 	message := &requestservice.DataRateRequest{Ipv4Addresses: ips}
 	stream, err := client.GetDataRates(context.Background(), message)
@@ -182,7 +184,7 @@ func SubscribeToDataRateDirectly(client pushservice.PushServiceClient) {
 			}
 			log.Fatalf("%v.SubscribeToDataRateDirectly(_) = _, %v", client, err)
 		}
-		
+
 		printDataRateFromPushService(ip, event.DataRate)
 	}
 	log.Print("--------------------")
@@ -423,6 +425,7 @@ func GetAllNodes(client requestservice.ApiGatewayClient) {
 	log.Print("--------------------")
 }
 
+//TODO: Error Handling
 func GetSpecificNodes(client requestservice.ApiGatewayClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting Three Specific Nodes ...")
@@ -430,6 +433,7 @@ func GetSpecificNodes(client requestservice.ApiGatewayClient) {
 		"2_0_0_0000.0000.000a",
 		"2_0_0_0000.0000.0001",
 		"2_0_0_0000.0000.0002",
+		"invalid",
 	}
 	message := &requestservice.LsNodeRequest{Keys: keys}
 	stream, err := client.GetLsNodes(context.Background(), message)
