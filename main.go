@@ -41,9 +41,9 @@ func main() {
 
 	input := bufio.NewScanner(os.Stdin)
 
-	// fmt.Print("Press any key to: REQUEST ALL NODES")
-	// input.Scan()
-	// GetAllNodes(rsClient)
+	fmt.Print("Press any key to: REQUEST ALL NODES")
+	input.Scan()
+	GetAllNodes(rsClient)
 
 	// fmt.Print("Press 'Enter' to: REQUEST THREE SPECIFIC NODES")
 	// input.Scan()
@@ -53,9 +53,9 @@ func main() {
 	// input.Scan()
 	// GetDataRates(rsClient)
 
-	fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
-	input.Scan()
-	SubscribeToAllLinks(psClient)
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
+	// input.Scan()
+	// SubscribeToAllLinks(psClient)
 
 	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINKS")
 	// input.Scan()
@@ -73,9 +73,9 @@ func main() {
 	input.Scan()
 	SubscribeToDataRateDirectly(psClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO EVERYTHING")
-	// input.Scan()
-	// SubscribeToEverything(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO EVERYTHING")
+	input.Scan()
+	SubscribeToEverything(psClient)
 }
 
 func GetDataRates(client requestservice.ApiGatewayClient) {
@@ -121,7 +121,6 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 	go allowUserToCancel(cancelled)
 	go func() {
 		<-cancelled
-		log.Print("CANCEL SUBSCRIPTION !!!!!!!!!!!")
 		cancel()
 	}()
 
@@ -130,11 +129,12 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 		if err == io.EOF {
 			break
 		}
+		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			//client canceled so we exit the loop
+			break
+		}
 		if err != nil {
-			if ctx.Done() != nil { //to fix
-				log.Print("BREAK FOR STATEMENT !!!!")
-				break
-			}
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
 		}
 		for _, elem := range event.Data {
@@ -168,23 +168,22 @@ func SubscribeToDataRateDirectly(client pushservice.PushServiceClient) {
 	go allowUserToCancel(cancelled)
 	go func() {
 		<-cancelled
-		log.Print("CANCEL SUBSCRIPTION !!!!!!!!!!!")
 		cancel()
 	}()
 
 	for {
-		event, err := stream.Recv()
+		if ctx.Err() != nil {
+			break
+		}
+		//TODO: cancel() should unblock Recv()
+		event, err := stream.Recv() //block the cancelation until next event is received from push service
+		// ctx.Err != nil if the context was canceled
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			if ctx.Done() != nil { //to fix
-				log.Print("BREAK FOR STATEMENT !!!!")
-				break
-			}
 			log.Fatalf("%v.SubscribeToDataRateDirectly(_) = _, %v", client, err)
 		}
-
 		printDataRateFromPushService(ip, event.DataRate)
 	}
 	log.Print("--------------------")
@@ -216,10 +215,12 @@ func SubscribeToPacketsSentAndReceived(client pushservice.PushServiceClient) {
 		if err == io.EOF {
 			break
 		}
+		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			//client canceled so we exit the loop
+			break
+		}
 		if err != nil {
-			if ctx.Err() != nil {
-				break
-			}
 			log.Fatalf("%v.SubscribeToPacketsSentAndReceived(_) = _, %v", client, err)
 		}
 		for _, elem := range event.Data {
@@ -268,10 +269,12 @@ func SubscribeToEverything(client pushservice.PushServiceClient) {
 		if err == io.EOF {
 			break
 		}
+		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			//client canceled so we exit the loop
+			break
+		}
 		if err != nil {
-			if ctx.Err() != nil {
-				break
-			}
 			log.Fatalf("%v.SubscribeToEverything(_) = _, %v", client, err)
 		}
 		for _, elem := range event.Data {
@@ -527,7 +530,7 @@ func printLastStateTransitionTime(ip string, lastStateTransitionTime int64) {
 
 func allowUserToCancel(cancelled chan bool) {
 	input := bufio.NewScanner(os.Stdin)
-	fmt.Print("Press 'Enter' to cancel subscription")
+	fmt.Print("Press 'Enter' to cancel subscription\n")
 	input.Scan()
 	cancelled <- true
 }
