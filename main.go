@@ -53,9 +53,9 @@ func main() {
 	// input.Scan()
 	// GetDataRates(rsClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
-	// input.Scan()
-	// SubscribeToAllLinks(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
+	input.Scan()
+	SubscribeToAllLinks(psClient)
 
 	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINKS")
 	// input.Scan()
@@ -112,7 +112,7 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 	ctx, cancel := context.WithCancel(ctx)
 	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
 	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: []string{"DataRate"}}
-	stream, err := client.SubscribeToTelemetryData(context.Background(), message)
+	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToDataRates on PushService: %s", err)
 	}
@@ -159,7 +159,7 @@ func SubscribeToDataRateDirectly(client pushservice.PushServiceClient) {
 	ctx, cancel := context.WithCancel(ctx)
 	ip := "10.18.8.53"
 	message := &pushservice.DataRateSubscription{Ipv4Address: ip}
-	stream, err := client.SubscribeToDataRate(context.Background(), message)
+	stream, err := client.SubscribeToDataRate(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToDataRateDirectly on PushService: %s", err)
 	}
@@ -172,12 +172,12 @@ func SubscribeToDataRateDirectly(client pushservice.PushServiceClient) {
 	}()
 
 	for {
-		if ctx.Err() != nil {
-			break
-		}
 		//TODO: cancel() should unblock Recv()
 		event, err := stream.Recv() //block the cancelation until next event is received from push service
 		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			break
+		}
 		if err == io.EOF {
 			break
 		}
@@ -198,7 +198,7 @@ func SubscribeToPacketsSentAndReceived(client pushservice.PushServiceClient) {
 
 	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
 	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: []string{"PacketsSent", "PacketsReceived"}}
-	stream, err := client.SubscribeToTelemetryData(context.Background(), message)
+	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToPacketsSentAndReceived on PushService: %s", err)
 	}
@@ -252,7 +252,7 @@ func SubscribeToEverything(client pushservice.PushServiceClient) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	message := &pushservice.TelemetrySubscription{}
-	stream, err := client.SubscribeToTelemetryData(context.Background(), message)
+	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToEverything on PushService: %s", err)
 	}
