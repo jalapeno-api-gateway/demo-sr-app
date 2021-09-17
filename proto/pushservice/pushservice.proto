@@ -3,15 +3,27 @@ package pushservice;
 
 option go_package = "gitlab.ost.ch/ins/jalapeno-api/push-service/proto/pushservice";
 
+service PushService {
+    rpc SubscribeToLsNodes(TopologySubscription) returns (stream LsNodeEvent) {}
+    rpc SubscribeToLsLinks(TopologySubscription) returns (stream LsLinkEvent) {}
+    rpc SubscribeToTelemetryData(TelemetrySubscription) returns (stream TelemetryEvent) {}
+}
+
+message TopologySubscription {
+    repeated string keys = 1;
+    repeated string propertyNames = 2;
+}
+
+message TelemetrySubscription {
+    repeated string ipv4addresses = 1;
+    repeated string propertyNames = 2;
+}
+
 message LsNode {
     string key = 1;
     string name = 2;
     int32 asn = 3;
     string router_ip = 4;
-}
-
-message LsNodeSubscription {
-    repeated string keys = 1;
 }
 
 message LsNodeEvent {
@@ -29,42 +41,22 @@ message LsLink {
     int32 igp_metric = 6;
 }
 
-message LsLinkSubscription {
-    repeated string keys = 1;
-}
-
 message LsLinkEvent {
     string action = 1;
     string key = 2;
     LsLink lsLink = 3;
 }
 
-message TelemetrySubscription {
-    repeated string ipv4addresses = 1;
-    repeated string propertyNames = 2;
-}
-
 message TelemetryEvent {
     string ipv4address = 1;
-    repeated TelemetryData data = 2;
+    int64 dataRate = 2;
+    int64 packetsSent = 3;
+    int64 packetsReceived = 4;
+    string state = 5;
+    int64 lastStateTransitionTime = 6;
 }
 
 message TelemetryData {
     string propertyName = 1;
     bytes value = 2;
-}
-
-message DataRateSubscription {
-    string ipv4address = 1;
-}
-
-message DataRate {
-    int64 dataRate = 1;
-}
-
-service PushService {
-    rpc SubscribeToLsNodes(LsNodeSubscription) returns (stream LsNodeEvent) {}
-    rpc SubscribeToLsLinks(LsLinkSubscription) returns (stream LsLinkEvent) {}
-    rpc SubscribeToTelemetryData(TelemetrySubscription) returns (stream TelemetryEvent) {}
-    rpc SubscribeToDataRate(DataRateSubscription) returns (stream DataRate) {}
 }

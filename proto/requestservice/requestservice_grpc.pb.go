@@ -14,29 +14,29 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// ApiGatewayClient is the client API for ApiGateway service.
+// RequestServiceClient is the client API for RequestService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ApiGatewayClient interface {
-	GetLsNodes(ctx context.Context, in *LsNodeRequest, opts ...grpc.CallOption) (ApiGateway_GetLsNodesClient, error)
-	GetLsLinks(ctx context.Context, in *LsLinkRequest, opts ...grpc.CallOption) (ApiGateway_GetLsLinksClient, error)
-	GetDataRates(ctx context.Context, in *DataRateRequest, opts ...grpc.CallOption) (ApiGateway_GetDataRatesClient, error)
+type RequestServiceClient interface {
+	GetLsNodes(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsNodesClient, error)
+	GetLsLinks(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsLinksClient, error)
+	GetTelemetryData(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (RequestService_GetTelemetryDataClient, error)
 }
 
-type apiGatewayClient struct {
+type requestServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewApiGatewayClient(cc grpc.ClientConnInterface) ApiGatewayClient {
-	return &apiGatewayClient{cc}
+func NewRequestServiceClient(cc grpc.ClientConnInterface) RequestServiceClient {
+	return &requestServiceClient{cc}
 }
 
-func (c *apiGatewayClient) GetLsNodes(ctx context.Context, in *LsNodeRequest, opts ...grpc.CallOption) (ApiGateway_GetLsNodesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[0], "/requestservice.ApiGateway/GetLsNodes", opts...)
+func (c *requestServiceClient) GetLsNodes(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsNodesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &RequestService_ServiceDesc.Streams[0], "/requestservice.RequestService/GetLsNodes", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &apiGatewayGetLsNodesClient{stream}
+	x := &requestServiceGetLsNodesClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -46,16 +46,16 @@ func (c *apiGatewayClient) GetLsNodes(ctx context.Context, in *LsNodeRequest, op
 	return x, nil
 }
 
-type ApiGateway_GetLsNodesClient interface {
+type RequestService_GetLsNodesClient interface {
 	Recv() (*LsNode, error)
 	grpc.ClientStream
 }
 
-type apiGatewayGetLsNodesClient struct {
+type requestServiceGetLsNodesClient struct {
 	grpc.ClientStream
 }
 
-func (x *apiGatewayGetLsNodesClient) Recv() (*LsNode, error) {
+func (x *requestServiceGetLsNodesClient) Recv() (*LsNode, error) {
 	m := new(LsNode)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -63,12 +63,12 @@ func (x *apiGatewayGetLsNodesClient) Recv() (*LsNode, error) {
 	return m, nil
 }
 
-func (c *apiGatewayClient) GetLsLinks(ctx context.Context, in *LsLinkRequest, opts ...grpc.CallOption) (ApiGateway_GetLsLinksClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[1], "/requestservice.ApiGateway/GetLsLinks", opts...)
+func (c *requestServiceClient) GetLsLinks(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsLinksClient, error) {
+	stream, err := c.cc.NewStream(ctx, &RequestService_ServiceDesc.Streams[1], "/requestservice.RequestService/GetLsLinks", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &apiGatewayGetLsLinksClient{stream}
+	x := &requestServiceGetLsLinksClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -78,16 +78,16 @@ func (c *apiGatewayClient) GetLsLinks(ctx context.Context, in *LsLinkRequest, op
 	return x, nil
 }
 
-type ApiGateway_GetLsLinksClient interface {
+type RequestService_GetLsLinksClient interface {
 	Recv() (*LsLink, error)
 	grpc.ClientStream
 }
 
-type apiGatewayGetLsLinksClient struct {
+type requestServiceGetLsLinksClient struct {
 	grpc.ClientStream
 }
 
-func (x *apiGatewayGetLsLinksClient) Recv() (*LsLink, error) {
+func (x *requestServiceGetLsLinksClient) Recv() (*LsLink, error) {
 	m := new(LsLink)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -95,12 +95,12 @@ func (x *apiGatewayGetLsLinksClient) Recv() (*LsLink, error) {
 	return m, nil
 }
 
-func (c *apiGatewayClient) GetDataRates(ctx context.Context, in *DataRateRequest, opts ...grpc.CallOption) (ApiGateway_GetDataRatesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ApiGateway_ServiceDesc.Streams[2], "/requestservice.ApiGateway/GetDataRates", opts...)
+func (c *requestServiceClient) GetTelemetryData(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (RequestService_GetTelemetryDataClient, error) {
+	stream, err := c.cc.NewStream(ctx, &RequestService_ServiceDesc.Streams[2], "/requestservice.RequestService/GetTelemetryData", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &apiGatewayGetDataRatesClient{stream}
+	x := &requestServiceGetTelemetryDataClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -110,143 +110,143 @@ func (c *apiGatewayClient) GetDataRates(ctx context.Context, in *DataRateRequest
 	return x, nil
 }
 
-type ApiGateway_GetDataRatesClient interface {
-	Recv() (*DataRate, error)
+type RequestService_GetTelemetryDataClient interface {
+	Recv() (*TelemetryResponse, error)
 	grpc.ClientStream
 }
 
-type apiGatewayGetDataRatesClient struct {
+type requestServiceGetTelemetryDataClient struct {
 	grpc.ClientStream
 }
 
-func (x *apiGatewayGetDataRatesClient) Recv() (*DataRate, error) {
-	m := new(DataRate)
+func (x *requestServiceGetTelemetryDataClient) Recv() (*TelemetryResponse, error) {
+	m := new(TelemetryResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// ApiGatewayServer is the server API for ApiGateway service.
-// All implementations must embed UnimplementedApiGatewayServer
+// RequestServiceServer is the server API for RequestService service.
+// All implementations must embed UnimplementedRequestServiceServer
 // for forward compatibility
-type ApiGatewayServer interface {
-	GetLsNodes(*LsNodeRequest, ApiGateway_GetLsNodesServer) error
-	GetLsLinks(*LsLinkRequest, ApiGateway_GetLsLinksServer) error
-	GetDataRates(*DataRateRequest, ApiGateway_GetDataRatesServer) error
-	mustEmbedUnimplementedApiGatewayServer()
+type RequestServiceServer interface {
+	GetLsNodes(*TopologyRequest, RequestService_GetLsNodesServer) error
+	GetLsLinks(*TopologyRequest, RequestService_GetLsLinksServer) error
+	GetTelemetryData(*TelemetryRequest, RequestService_GetTelemetryDataServer) error
+	mustEmbedUnimplementedRequestServiceServer()
 }
 
-// UnimplementedApiGatewayServer must be embedded to have forward compatible implementations.
-type UnimplementedApiGatewayServer struct {
+// UnimplementedRequestServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedRequestServiceServer struct {
 }
 
-func (UnimplementedApiGatewayServer) GetLsNodes(*LsNodeRequest, ApiGateway_GetLsNodesServer) error {
+func (UnimplementedRequestServiceServer) GetLsNodes(*TopologyRequest, RequestService_GetLsNodesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetLsNodes not implemented")
 }
-func (UnimplementedApiGatewayServer) GetLsLinks(*LsLinkRequest, ApiGateway_GetLsLinksServer) error {
+func (UnimplementedRequestServiceServer) GetLsLinks(*TopologyRequest, RequestService_GetLsLinksServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetLsLinks not implemented")
 }
-func (UnimplementedApiGatewayServer) GetDataRates(*DataRateRequest, ApiGateway_GetDataRatesServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetDataRates not implemented")
+func (UnimplementedRequestServiceServer) GetTelemetryData(*TelemetryRequest, RequestService_GetTelemetryDataServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetTelemetryData not implemented")
 }
-func (UnimplementedApiGatewayServer) mustEmbedUnimplementedApiGatewayServer() {}
+func (UnimplementedRequestServiceServer) mustEmbedUnimplementedRequestServiceServer() {}
 
-// UnsafeApiGatewayServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ApiGatewayServer will
+// UnsafeRequestServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RequestServiceServer will
 // result in compilation errors.
-type UnsafeApiGatewayServer interface {
-	mustEmbedUnimplementedApiGatewayServer()
+type UnsafeRequestServiceServer interface {
+	mustEmbedUnimplementedRequestServiceServer()
 }
 
-func RegisterApiGatewayServer(s grpc.ServiceRegistrar, srv ApiGatewayServer) {
-	s.RegisterService(&ApiGateway_ServiceDesc, srv)
+func RegisterRequestServiceServer(s grpc.ServiceRegistrar, srv RequestServiceServer) {
+	s.RegisterService(&RequestService_ServiceDesc, srv)
 }
 
-func _ApiGateway_GetLsNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(LsNodeRequest)
+func _RequestService_GetLsNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TopologyRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ApiGatewayServer).GetLsNodes(m, &apiGatewayGetLsNodesServer{stream})
+	return srv.(RequestServiceServer).GetLsNodes(m, &requestServiceGetLsNodesServer{stream})
 }
 
-type ApiGateway_GetLsNodesServer interface {
+type RequestService_GetLsNodesServer interface {
 	Send(*LsNode) error
 	grpc.ServerStream
 }
 
-type apiGatewayGetLsNodesServer struct {
+type requestServiceGetLsNodesServer struct {
 	grpc.ServerStream
 }
 
-func (x *apiGatewayGetLsNodesServer) Send(m *LsNode) error {
+func (x *requestServiceGetLsNodesServer) Send(m *LsNode) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _ApiGateway_GetLsLinks_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(LsLinkRequest)
+func _RequestService_GetLsLinks_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TopologyRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ApiGatewayServer).GetLsLinks(m, &apiGatewayGetLsLinksServer{stream})
+	return srv.(RequestServiceServer).GetLsLinks(m, &requestServiceGetLsLinksServer{stream})
 }
 
-type ApiGateway_GetLsLinksServer interface {
+type RequestService_GetLsLinksServer interface {
 	Send(*LsLink) error
 	grpc.ServerStream
 }
 
-type apiGatewayGetLsLinksServer struct {
+type requestServiceGetLsLinksServer struct {
 	grpc.ServerStream
 }
 
-func (x *apiGatewayGetLsLinksServer) Send(m *LsLink) error {
+func (x *requestServiceGetLsLinksServer) Send(m *LsLink) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _ApiGateway_GetDataRates_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(DataRateRequest)
+func _RequestService_GetTelemetryData_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TelemetryRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ApiGatewayServer).GetDataRates(m, &apiGatewayGetDataRatesServer{stream})
+	return srv.(RequestServiceServer).GetTelemetryData(m, &requestServiceGetTelemetryDataServer{stream})
 }
 
-type ApiGateway_GetDataRatesServer interface {
-	Send(*DataRate) error
+type RequestService_GetTelemetryDataServer interface {
+	Send(*TelemetryResponse) error
 	grpc.ServerStream
 }
 
-type apiGatewayGetDataRatesServer struct {
+type requestServiceGetTelemetryDataServer struct {
 	grpc.ServerStream
 }
 
-func (x *apiGatewayGetDataRatesServer) Send(m *DataRate) error {
+func (x *requestServiceGetTelemetryDataServer) Send(m *TelemetryResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-// ApiGateway_ServiceDesc is the grpc.ServiceDesc for ApiGateway service.
+// RequestService_ServiceDesc is the grpc.ServiceDesc for RequestService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ApiGateway_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "requestservice.ApiGateway",
-	HandlerType: (*ApiGatewayServer)(nil),
+var RequestService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "requestservice.RequestService",
+	HandlerType: (*RequestServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "GetLsNodes",
-			Handler:       _ApiGateway_GetLsNodes_Handler,
+			Handler:       _RequestService_GetLsNodes_Handler,
 			ServerStreams: true,
 		},
 		{
 			StreamName:    "GetLsLinks",
-			Handler:       _ApiGateway_GetLsLinks_Handler,
+			Handler:       _RequestService_GetLsLinks_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "GetDataRates",
-			Handler:       _ApiGateway_GetDataRates_Handler,
+			StreamName:    "GetTelemetryData",
+			Handler:       _RequestService_GetTelemetryData_Handler,
 			ServerStreams: true,
 		},
 	},
