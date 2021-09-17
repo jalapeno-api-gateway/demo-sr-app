@@ -55,8 +55,3 @@ message TelemetryEvent {
     string state = 5;
     int64 lastStateTransitionTime = 6;
 }
-
-message TelemetryData {
-    string propertyName = 1;
-    bytes value = 2;
-}
