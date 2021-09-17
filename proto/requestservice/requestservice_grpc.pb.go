@@ -18,9 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RequestServiceClient interface {
-	GetLsNodes(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsNodesClient, error)
-	GetLsLinks(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsLinksClient, error)
-	GetTelemetryData(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (RequestService_GetTelemetryDataClient, error)
+	GetLsNodes(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (*LsNodeResponse, error)
+	GetLsLinks(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (*LsLinkResponse, error)
+	GetTelemetryData(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
 }
 
 type requestServiceClient struct {
@@ -31,109 +31,40 @@ func NewRequestServiceClient(cc grpc.ClientConnInterface) RequestServiceClient {
 	return &requestServiceClient{cc}
 }
 
-func (c *requestServiceClient) GetLsNodes(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsNodesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &RequestService_ServiceDesc.Streams[0], "/requestservice.RequestService/GetLsNodes", opts...)
+func (c *requestServiceClient) GetLsNodes(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (*LsNodeResponse, error) {
+	out := new(LsNodeResponse)
+	err := c.cc.Invoke(ctx, "/requestservice.RequestService/GetLsNodes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &requestServiceGetLsNodesClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type RequestService_GetLsNodesClient interface {
-	Recv() (*LsNode, error)
-	grpc.ClientStream
-}
-
-type requestServiceGetLsNodesClient struct {
-	grpc.ClientStream
-}
-
-func (x *requestServiceGetLsNodesClient) Recv() (*LsNode, error) {
-	m := new(LsNode)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *requestServiceClient) GetLsLinks(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (RequestService_GetLsLinksClient, error) {
-	stream, err := c.cc.NewStream(ctx, &RequestService_ServiceDesc.Streams[1], "/requestservice.RequestService/GetLsLinks", opts...)
+func (c *requestServiceClient) GetLsLinks(ctx context.Context, in *TopologyRequest, opts ...grpc.CallOption) (*LsLinkResponse, error) {
+	out := new(LsLinkResponse)
+	err := c.cc.Invoke(ctx, "/requestservice.RequestService/GetLsLinks", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &requestServiceGetLsLinksClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type RequestService_GetLsLinksClient interface {
-	Recv() (*LsLink, error)
-	grpc.ClientStream
-}
-
-type requestServiceGetLsLinksClient struct {
-	grpc.ClientStream
-}
-
-func (x *requestServiceGetLsLinksClient) Recv() (*LsLink, error) {
-	m := new(LsLink)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *requestServiceClient) GetTelemetryData(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (RequestService_GetTelemetryDataClient, error) {
-	stream, err := c.cc.NewStream(ctx, &RequestService_ServiceDesc.Streams[2], "/requestservice.RequestService/GetTelemetryData", opts...)
+func (c *requestServiceClient) GetTelemetryData(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/requestservice.RequestService/GetTelemetryData", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &requestServiceGetTelemetryDataClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type RequestService_GetTelemetryDataClient interface {
-	Recv() (*TelemetryResponse, error)
-	grpc.ClientStream
-}
-
-type requestServiceGetTelemetryDataClient struct {
-	grpc.ClientStream
-}
-
-func (x *requestServiceGetTelemetryDataClient) Recv() (*TelemetryResponse, error) {
-	m := new(TelemetryResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // RequestServiceServer is the server API for RequestService service.
 // All implementations must embed UnimplementedRequestServiceServer
 // for forward compatibility
 type RequestServiceServer interface {
-	GetLsNodes(*TopologyRequest, RequestService_GetLsNodesServer) error
-	GetLsLinks(*TopologyRequest, RequestService_GetLsLinksServer) error
-	GetTelemetryData(*TelemetryRequest, RequestService_GetTelemetryDataServer) error
+	GetLsNodes(context.Context, *TopologyRequest) (*LsNodeResponse, error)
+	GetLsLinks(context.Context, *TopologyRequest) (*LsLinkResponse, error)
+	GetTelemetryData(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
 	mustEmbedUnimplementedRequestServiceServer()
 }
 
@@ -141,14 +72,14 @@ type RequestServiceServer interface {
 type UnimplementedRequestServiceServer struct {
 }
 
-func (UnimplementedRequestServiceServer) GetLsNodes(*TopologyRequest, RequestService_GetLsNodesServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetLsNodes not implemented")
+func (UnimplementedRequestServiceServer) GetLsNodes(context.Context, *TopologyRequest) (*LsNodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLsNodes not implemented")
 }
-func (UnimplementedRequestServiceServer) GetLsLinks(*TopologyRequest, RequestService_GetLsLinksServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetLsLinks not implemented")
+func (UnimplementedRequestServiceServer) GetLsLinks(context.Context, *TopologyRequest) (*LsLinkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLsLinks not implemented")
 }
-func (UnimplementedRequestServiceServer) GetTelemetryData(*TelemetryRequest, RequestService_GetTelemetryDataServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetTelemetryData not implemented")
+func (UnimplementedRequestServiceServer) GetTelemetryData(context.Context, *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTelemetryData not implemented")
 }
 func (UnimplementedRequestServiceServer) mustEmbedUnimplementedRequestServiceServer() {}
 
@@ -163,67 +94,58 @@ func RegisterRequestServiceServer(s grpc.ServiceRegistrar, srv RequestServiceSer
 	s.RegisterService(&RequestService_ServiceDesc, srv)
 }
 
-func _RequestService_GetLsNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(TopologyRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _RequestService_GetLsNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopologyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(RequestServiceServer).GetLsNodes(m, &requestServiceGetLsNodesServer{stream})
-}
-
-type RequestService_GetLsNodesServer interface {
-	Send(*LsNode) error
-	grpc.ServerStream
-}
-
-type requestServiceGetLsNodesServer struct {
-	grpc.ServerStream
-}
-
-func (x *requestServiceGetLsNodesServer) Send(m *LsNode) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _RequestService_GetLsLinks_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(TopologyRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+	if interceptor == nil {
+		return srv.(RequestServiceServer).GetLsNodes(ctx, in)
 	}
-	return srv.(RequestServiceServer).GetLsLinks(m, &requestServiceGetLsLinksServer{stream})
-}
-
-type RequestService_GetLsLinksServer interface {
-	Send(*LsLink) error
-	grpc.ServerStream
-}
-
-type requestServiceGetLsLinksServer struct {
-	grpc.ServerStream
-}
-
-func (x *requestServiceGetLsLinksServer) Send(m *LsLink) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _RequestService_GetTelemetryData_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(TelemetryRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/requestservice.RequestService/GetLsNodes",
 	}
-	return srv.(RequestServiceServer).GetTelemetryData(m, &requestServiceGetTelemetryDataServer{stream})
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RequestServiceServer).GetLsNodes(ctx, req.(*TopologyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type RequestService_GetTelemetryDataServer interface {
-	Send(*TelemetryResponse) error
-	grpc.ServerStream
+func _RequestService_GetLsLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopologyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RequestServiceServer).GetLsLinks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/requestservice.RequestService/GetLsLinks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RequestServiceServer).GetLsLinks(ctx, req.(*TopologyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type requestServiceGetTelemetryDataServer struct {
-	grpc.ServerStream
-}
-
-func (x *requestServiceGetTelemetryDataServer) Send(m *TelemetryResponse) error {
-	return x.ServerStream.SendMsg(m)
+func _RequestService_GetTelemetryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RequestServiceServer).GetTelemetryData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/requestservice.RequestService/GetTelemetryData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RequestServiceServer).GetTelemetryData(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // RequestService_ServiceDesc is the grpc.ServiceDesc for RequestService service.
@@ -232,23 +154,20 @@ func (x *requestServiceGetTelemetryDataServer) Send(m *TelemetryResponse) error 
 var RequestService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "requestservice.RequestService",
 	HandlerType: (*RequestServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "GetLsNodes",
-			Handler:       _RequestService_GetLsNodes_Handler,
-			ServerStreams: true,
+			MethodName: "GetLsNodes",
+			Handler:    _RequestService_GetLsNodes_Handler,
 		},
 		{
-			StreamName:    "GetLsLinks",
-			Handler:       _RequestService_GetLsLinks_Handler,
-			ServerStreams: true,
+			MethodName: "GetLsLinks",
+			Handler:    _RequestService_GetLsLinks_Handler,
 		},
 		{
-			StreamName:    "GetTelemetryData",
-			Handler:       _RequestService_GetTelemetryData_Handler,
-			ServerStreams: true,
+			MethodName: "GetTelemetryData",
+			Handler:    _RequestService_GetTelemetryData_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "requestservice.proto",
 }

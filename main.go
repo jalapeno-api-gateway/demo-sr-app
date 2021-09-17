@@ -87,19 +87,12 @@ func GetDataRates(client requestservice.RequestServiceClient) {
 	}
 
 	message := &requestservice.TelemetryRequest{Ipv4Addresses: ips, PropertyNames: propertyNames}
-	stream, err := client.GetTelemetryData(context.Background(), message)
+	response, err := client.GetTelemetryData(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetDataRates on RequestService: %s", err)
 	}
-	for {
-		dataRate, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalf("%v.GetDataRates(_) = _, %v", client, err)
-		}
-		printDataRate(dataRate)
+	for _, telemetryData := range response.TelemetryData {
+		printDataRate(telemetryData)
 	}
 	log.Print("--------------------")
 }
@@ -327,20 +320,13 @@ func GetAllNodes(client requestservice.RequestServiceClient) {
 		"RouterIp",
 	}
 	message := &requestservice.TopologyRequest{PropertyNames: propertyNames}
-	stream, err := client.GetLsNodes(context.Background(), message)
+	response, err := client.GetLsNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
 
-	for {
-		node, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalf("%v.GetLsNodes(_) = _, %v", client, err)
-		}
-		printNode(node)
+	for _, lsNode := range response.LsNodes {
+		printNode(lsNode)
 	}
 	log.Print("--------------------")
 }
@@ -360,20 +346,13 @@ func GetSpecificNodes(client requestservice.RequestServiceClient) {
 		"RouterIp",
 	}
 	message := &requestservice.TopologyRequest{Keys: keys, PropertyNames: propertyNames}
-	stream, err := client.GetLsNodes(context.Background(), message)
+	response, err := client.GetLsNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
 
-	for {
-		node, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalf("%v.GetLsNodes(_) = _, %v", client, err)
-		}
-		printNode(node)
+	for _, lsNode := range response.LsNodes {
+		printNode(lsNode)
 	}
 	log.Print("--------------------")
 }
@@ -413,7 +392,7 @@ func printLinkEvent(event *pushservice.LsLinkEvent) {
 	log.Printf("  IgpMetric: %d", event.LsLink.IgpMetric)
 }
 
-func printDataRate(response *requestservice.TelemetryResponse) {
+func printDataRate(response *requestservice.TelemetryData) {
 	log.Printf(">>> Received DataRate\n")
 	log.Printf("  Ipv4Address: %s", response.Ipv4Address)
 	log.Printf("  DataRate: %d", response.DataRate)

@@ -4,9 +4,9 @@ package requestservice;
 option go_package = "gitlab.ost.ch/ins/jalapeno-api/sr-app/proto/requestservice";
 
 service RequestService {
-    rpc GetLsNodes(TopologyRequest) returns (stream LsNode) {}
-    rpc GetLsLinks(TopologyRequest) returns (stream LsLink) {}
-    rpc GetTelemetryData(TelemetryRequest) returns (stream TelemetryResponse) {}
+    rpc GetLsNodes(TopologyRequest) returns (LsNodeResponse) {}
+    rpc GetLsLinks(TopologyRequest) returns (LsLinkResponse) {}
+    rpc GetTelemetryData(TelemetryRequest) returns (TelemetryResponse) {}
 }
 
 //
@@ -27,6 +27,14 @@ message TelemetryRequest {
 // Responses
 //
 
+message LsNodeResponse {
+    repeated LsNode lsNodes = 1;
+}
+
+message LsLinkResponse {
+    repeated LsLink lsLinks = 1;
+}
+
 message LsNode {
     string key = 1;
     string name = 2;
@@ -44,6 +52,10 @@ message LsLink {
 }
 
 message TelemetryResponse {
+    repeated TelemetryData telemetryData = 1;
+}
+
+message TelemetryData {
     string ipv4address = 1;
     int64 dataRate = 2;
 }
