@@ -342,8 +342,8 @@ func GetSpecificNodes(client requestservice.RequestServiceClient) {
 		"invalid",
 	}
 	propertyNames := []string{
-		"Asn",
 		"RouterIp",
+		"Name",
 	}
 	message := &requestservice.TopologyRequest{Keys: keys, PropertyNames: propertyNames}
 	response, err := client.GetLsNodes(context.Background(), message)
@@ -364,20 +364,24 @@ func GetSpecificNodes(client requestservice.RequestServiceClient) {
 //
 
 func printNode(node *requestservice.LsNode) {
-	log.Printf(">>> Received Node \"%s\"\n", node.Name)
+	log.Printf(">>> Received Node \"%s\"\n", *node.Name)
 	log.Printf("  Key: %s", node.Key)
-	log.Printf("  Name: %s", node.Name)
-	log.Printf("  Asn: %d", node.Asn)
-	log.Printf("  RouterIp: %s", node.RouterIp)
+	log.Printf("  Name: %s", *node.Name)
+	if node.Asn != nil {
+		log.Printf("  Asn: %d", node.Asn)
+	}
+	if node.RouterIp != nil {
+		log.Printf("  RouterIp: %s", *node.RouterIp)
+	}
 }
 
 func printLink(link *requestservice.LsLink) {
 	log.Printf(">>> Received Link\n")
 	log.Printf("  Key: %s", link.Key)
-	log.Printf("  RouterIp: %s", link.RouterIp)
-	log.Printf("  PeerIp: %s", link.PeerIp)
-	log.Printf("  LocalLinkIp: %s", link.LocalLinkIp)
-	log.Printf("  RemoteLinkIp: %s", link.RemoteLinkIp)
+	log.Printf("  RouterIp: %s", *link.RouterIp)
+	log.Printf("  PeerIp: %s", *link.PeerIp)
+	log.Printf("  LocalLinkIp: %s", *link.LocalLinkIp)
+	log.Printf("  RemoteLinkIp: %s", *link.RemoteLinkIp)
 	log.Printf("  IgpMetric: %d", link.IgpMetric)
 }
 

@@ -37,18 +37,18 @@ message LsLinkResponse {
 
 message LsNode {
     string key = 1;
-    string name = 2;
-    int32 asn = 3;
-    string router_ip = 4;
+    optional string name = 2;
+    optional int32 asn = 3;
+    optional string router_ip = 4;
 }
 
 message LsLink {
     string key = 1;
-	string router_ip = 2;
-	string peer_ip = 3;
-	string localLink_ip = 4;
-    string remoteLink_ip = 5;
-    int32 igp_metric = 6;
+	optional string router_ip = 2;
+	optional string peer_ip = 3;
+	optional string localLink_ip = 4;
+    optional string remoteLink_ip = 5;
+    optional int32 igp_metric = 6;
 }
 
 message TelemetryResponse {
@@ -57,5 +57,5 @@ message TelemetryResponse {
 
 message TelemetryData {
     string ipv4address = 1;
-    int64 dataRate = 2;
+    optional int64 dataRate = 2;
 }
