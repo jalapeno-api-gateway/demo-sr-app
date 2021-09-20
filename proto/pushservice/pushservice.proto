@@ -21,9 +21,9 @@ message TelemetrySubscription {
 
 message LsNode {
     string key = 1;
-    string name = 2;
-    int32 asn = 3;
-    string router_ip = 4;
+    optional string name = 2;
+    optional int32 asn = 3;
+    optional string router_ip = 4;
 }
 
 message LsNodeEvent {
@@ -34,11 +34,11 @@ message LsNodeEvent {
 
 message LsLink {
     string key = 1;
-	string router_ip = 2;
-	string peer_ip = 3;
-	string localLink_ip = 4;
-    string remoteLink_ip = 5;
-    int32 igp_metric = 6;
+	optional string router_ip = 2;
+	optional string peer_ip = 3;
+	optional string localLink_ip = 4;
+    optional string remoteLink_ip = 5;
+    optional int32 igp_metric = 6;
 }
 
 message LsLinkEvent {
@@ -49,9 +49,9 @@ message LsLinkEvent {
 
 message TelemetryEvent {
     string ipv4address = 1;
-    int64 dataRate = 2;
-    int64 packetsSent = 3;
-    int64 packetsReceived = 4;
-    string state = 5;
-    int64 lastStateTransitionTime = 6;
+    optional int64 dataRate = 2;
+    optional int64 packetsSent = 3;
+    optional int64 packetsReceived = 4;
+    optional string state = 5;
+    optional int64 lastStateTransitionTime = 6;
 }

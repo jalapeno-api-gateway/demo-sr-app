@@ -389,10 +389,10 @@ func printLinkEvent(event *pushservice.LsLinkEvent) {
 	log.Printf(">>> Received LinkEvent\n")
 	log.Printf("  Action: %s", event.Action)
 	log.Printf("  Key: %s", event.LsLink.Key)
-	log.Printf("  RouterIp: %s", event.LsLink.RouterIp)
-	log.Printf("  PeerIp: %s", event.LsLink.PeerIp)
-	log.Printf("  LocalLinkIp: %s", event.LsLink.LocalLinkIp)
-	log.Printf("  RemoteLinkIp: %s", event.LsLink.RemoteLinkIp)
+	log.Printf("  RouterIp: %s", *event.LsLink.RouterIp)
+	log.Printf("  PeerIp: %s", *event.LsLink.PeerIp)
+	log.Printf("  LocalLinkIp: %s", *event.LsLink.LocalLinkIp)
+	log.Printf("  RemoteLinkIp: %s", *event.LsLink.RemoteLinkIp)
 	log.Printf("  IgpMetric: %d", event.LsLink.IgpMetric)
 }
 
@@ -402,34 +402,44 @@ func printDataRate(response *requestservice.TelemetryData) {
 	log.Printf("  DataRate: %d", response.DataRate)
 }
 
-func printDataRateFromPushService(ip string, dataRate int64) {
+func printDataRateFromPushService(ip string, dataRate *int64) {
 	log.Printf(">>> Received DataRate\n")
 	log.Printf("  Ipv4Address: %s", ip)
-	log.Printf("  DataRate: %d", dataRate)
+	if dataRate != nil {
+		log.Printf("  DataRate: %d", *dataRate)
+	}
 }
 
-func printPacketsSent(ip string, packetsSent int64) {
+func printPacketsSent(ip string, packetsSent *int64) {
 	log.Printf(">>> Received PacketsSent\n")
 	log.Printf("  Ipv4Address: %s", ip)
-	log.Printf("  PacketsSent: %d", packetsSent)
+	if packetsSent != nil {
+		log.Printf("  PacketsSent: %d", *packetsSent)
+	}
 }
 
-func printPacketsReceived(ip string, packetsReceived int64) {
+func printPacketsReceived(ip string, packetsReceived *int64) {
 	log.Printf(">>> Received PacketsReceived\n")
 	log.Printf("  Ipv4Address: %s", ip)
-	log.Printf("  PacketsReceived: %d", packetsReceived)
+	if packetsReceived != nil {
+		log.Printf("  PacketsReceived: %d", *packetsReceived)
+	}
 }
 
-func printState(ip string, state string) {
+func printState(ip string, state *string) {
 	log.Printf(">>> Received State\n")
 	log.Printf("  Ipv4Address: %s", ip)
-	log.Printf("  State: %s", state)
+	if state != nil {
+		log.Printf("  State: %s", *state)
+	}
 }
 
-func printLastStateTransitionTime(ip string, lastStateTransitionTime int64) {
+func printLastStateTransitionTime(ip string, lastStateTransitionTime *int64) {
 	log.Printf(">>> Received LastStateTransitionTime\n")
 	log.Printf("  Ipv4Address: %s", ip)
-	log.Printf("  LastStateTransitionTime: %d", lastStateTransitionTime)
+	if lastStateTransitionTime != nil {
+		log.Printf("  LastStateTransitionTime: %d", *lastStateTransitionTime)
+	}
 }
 
 func allowUserToCancel(cancelled chan bool) {
