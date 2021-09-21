@@ -314,12 +314,8 @@ func SubscribeToAllLinks(client pushservice.PushServiceClient) {
 func GetAllNodes(client requestservice.RequestServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting All Available Nodes")
-	propertyNames := []string{
-		"Name",
-		"Asn",
-		"RouterIp",
-	}
-	message := &requestservice.TopologyRequest{PropertyNames: propertyNames}
+	
+	message := &requestservice.TopologyRequest{}
 	response, err := client.GetLsNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
@@ -368,7 +364,7 @@ func printNode(node *requestservice.LsNode) {
 	log.Printf("  Key: %s", node.Key)
 	log.Printf("  Name: %s", *node.Name)
 	if node.Asn != nil {
-		log.Printf("  Asn: %d", node.Asn)
+		log.Printf("  Asn: %d", *node.Asn)
 	}
 	if node.RouterIp != nil {
 		log.Printf("  RouterIp: %s", *node.RouterIp)
@@ -382,7 +378,7 @@ func printLink(link *requestservice.LsLink) {
 	log.Printf("  PeerIp: %s", *link.PeerIp)
 	log.Printf("  LocalLinkIp: %s", *link.LocalLinkIp)
 	log.Printf("  RemoteLinkIp: %s", *link.RemoteLinkIp)
-	log.Printf("  IgpMetric: %d", link.IgpMetric)
+	log.Printf("  IgpMetric: %d", *link.IgpMetric)
 }
 
 func printLinkEvent(event *pushservice.LsLinkEvent) {
@@ -393,13 +389,15 @@ func printLinkEvent(event *pushservice.LsLinkEvent) {
 	log.Printf("  PeerIp: %s", *event.LsLink.PeerIp)
 	log.Printf("  LocalLinkIp: %s", *event.LsLink.LocalLinkIp)
 	log.Printf("  RemoteLinkIp: %s", *event.LsLink.RemoteLinkIp)
-	log.Printf("  IgpMetric: %d", event.LsLink.IgpMetric)
+	log.Printf("  IgpMetric: %d", *event.LsLink.IgpMetric)
 }
 
 func printDataRate(response *requestservice.TelemetryData) {
 	log.Printf(">>> Received DataRate\n")
 	log.Printf("  Ipv4Address: %s", response.Ipv4Address)
-	log.Printf("  DataRate: %d", response.DataRate)
+	if response.DataRate != nil {
+		log.Printf("  DataRate: %d", *response.DataRate)
+	}
 }
 
 func printDataRateFromPushService(ip string, dataRate *int64) {
