@@ -12,8 +12,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	"gitlab.ost.ch/ins/jalapeno-api/sr-app/proto/pushservice"
-	"gitlab.ost.ch/ins/jalapeno-api/sr-app/proto/requestservice"
+	"github.com/jalapeno-api-gateway/demo-sr-app/proto/subscriptionservice"
+	"github.com/jalapeno-api-gateway/demo-sr-app/proto/requestservice"
 )
 
 func main() {
@@ -27,16 +27,16 @@ func main() {
 	}
 	defer rsConn.Close()
 
-	//Connecting to Push Service
+	//Connecting to Subscription Service
 	var psConn *grpc.ClientConn
-	psConn, psErr := grpc.Dial(os.Getenv("PUSH_SERVICE_ADDRESS"), grpc.WithInsecure())
+	psConn, psErr := grpc.Dial(os.Getenv("SUBSCRIPTION_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if psErr != nil {
-		log.Fatalf("Could not connect to push service: %s", psErr)
+		log.Fatalf("Could not connect to subscription service: %s", psErr)
 	}
 	defer psConn.Close()
 
 	rsClient := requestservice.NewRequestServiceClient(rsConn)
-	psClient := pushservice.NewPushServiceClient(psConn)
+	psClient := subscriptionservice.NewSubscriptionServiceClient(psConn)
 
 	input := bufio.NewScanner(os.Stdin)
 
@@ -97,7 +97,7 @@ func GetDataRates(client requestservice.RequestServiceClient) {
 	log.Print("--------------------")
 }
 
-func SubscribeToDataRates(client pushservice.PushServiceClient) {
+func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To Specific DataRates")
 
@@ -108,10 +108,10 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 		"DataRate",
 	}
 
-	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	message := &subscriptionservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
 	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
-		log.Fatalf("Error when calling SubscribeToDataRates on PushService: %s", err)
+		log.Fatalf("Error when calling SubscribeToDataRates on SubscriptionService: %s", err)
 	}
 
 	cancelled := make(chan bool, 1)
@@ -134,12 +134,12 @@ func SubscribeToDataRates(client pushservice.PushServiceClient) {
 		if err != nil {
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
 		}
-		printDataRateFromPushService(event.Ipv4Address, event.DataRate)
+		printDataRateFromSubscriptionService(event.Ipv4Address, event.DataRate)
 	}
 	log.Print("--------------------")
 }
 
-func SubscribeToPacketsSentAndReceived(client pushservice.PushServiceClient) {
+func SubscribeToPacketsSentAndReceived(client subscriptionservice.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To PacketsSent")
 
@@ -151,10 +151,10 @@ func SubscribeToPacketsSentAndReceived(client pushservice.PushServiceClient) {
 		"PacketsSent",
 		"PacketsReceived",
 	}
-	message := &pushservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	message := &subscriptionservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
 	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
-		log.Fatalf("Error when calling SubscribeToPacketsSentAndReceived on PushService: %s", err)
+		log.Fatalf("Error when calling SubscribeToPacketsSentAndReceived on SubscriptionService: %s", err)
 	}
 
 	cancelled := make(chan bool, 1)
@@ -183,16 +183,16 @@ func SubscribeToPacketsSentAndReceived(client pushservice.PushServiceClient) {
 	log.Print("--------------------")
 }
 
-func SubscribeToEverything(client pushservice.PushServiceClient) {
+func SubscribeToEverything(client subscriptionservice.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To Everything")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
-	message := &pushservice.TelemetrySubscription{}
+	message := &subscriptionservice.TelemetrySubscription{}
 	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
-		log.Fatalf("Error when calling SubscribeToEverything on PushService: %s", err)
+		log.Fatalf("Error when calling SubscribeToEverything on SubscriptionService: %s", err)
 	}
 
 	cancelled := make(chan bool, 1)
@@ -217,7 +217,7 @@ func SubscribeToEverything(client pushservice.PushServiceClient) {
 		}
 		printPacketsSent(event.Ipv4Address, event.PacketsSent)
 		printPacketsReceived(event.Ipv4Address, event.PacketsReceived)
-		printDataRateFromPushService(event.Ipv4Address, event.DataRate)
+		printDataRateFromSubscriptionService(event.Ipv4Address, event.DataRate)
 		printState(event.Ipv4Address, event.State)
 		printLastStateTransitionTime(event.Ipv4Address, event.LastStateTransitionTime)
 	}
@@ -230,7 +230,7 @@ func SubscribeToEverything(client pushservice.PushServiceClient) {
 //
 //
 
-func SubscribeToSpecificLinks(client pushservice.PushServiceClient) {
+func SubscribeToSpecificLinks(client subscriptionservice.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To Specific Links")
 
@@ -240,10 +240,10 @@ func SubscribeToSpecificLinks(client pushservice.PushServiceClient) {
 	keys := []string{
 		"2_0_2_0_0000.0000.000b_2001:db8:117::11_0000.0000.0007_2001:db8:117::7",
 	}
-	message := &pushservice.TopologySubscription{Keys: keys}
+	message := &subscriptionservice.TopologySubscription{Keys: keys}
 	stream, err := client.SubscribeToLsLinks(ctx, message)
 	if err != nil {
-		log.Fatalf("Error when calling SubscribeToSpecificLinks on PushService: %s", err)
+		log.Fatalf("Error when calling SubscribeToSpecificLinks on SubscriptionService: %s", err)
 	}
 
 	cancelled := make(chan bool, 1)
@@ -269,17 +269,17 @@ func SubscribeToSpecificLinks(client pushservice.PushServiceClient) {
 	log.Print("--------------------")
 }
 
-func SubscribeToAllLinks(client pushservice.PushServiceClient) {
+func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To All Links")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 
-	message := &pushservice.TopologySubscription{}
+	message := &subscriptionservice.TopologySubscription{}
 	stream, err := client.SubscribeToLsLinks(ctx, message)
 	if err != nil {
-		log.Fatalf("Error when calling SubscribeToAllLinks on PushService: %s", err)
+		log.Fatalf("Error when calling SubscribeToAllLinks on SubscriptionService: %s", err)
 	}
 
 	cancelled := make(chan bool, 1)
@@ -381,7 +381,7 @@ func printLink(link *requestservice.LsLink) {
 	log.Printf("  IgpMetric: %d", *link.IgpMetric)
 }
 
-func printLinkEvent(event *pushservice.LsLinkEvent) {
+func printLinkEvent(event *subscriptionservice.LsLinkEvent) {
 	log.Printf(">>> Received LinkEvent\n")
 	log.Printf("  Action: %s", event.Action)
 	log.Printf("  Key: %s", event.LsLink.Key)
@@ -400,7 +400,7 @@ func printDataRate(response *requestservice.TelemetryData) {
 	}
 }
 
-func printDataRateFromPushService(ip string, dataRate *int64) {
+func printDataRateFromSubscriptionService(ip string, dataRate *int64) {
 	log.Printf(">>> Received DataRate\n")
 	log.Printf("  Ipv4Address: %s", ip)
 	if dataRate != nil {

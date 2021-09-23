@@ -1,9 +1,9 @@
 syntax = "proto3";
-package pushservice;
+package subscriptionservice;
 
-option go_package = "gitlab.ost.ch/ins/jalapeno-api/push-service/proto/pushservice";
+option go_package = "github.com/jalapeno-api-gateway/demo-sr-app/proto/subscriptionservice";
 
-service PushService {
+service SubscriptionService {
     rpc SubscribeToLsNodes(TopologySubscription) returns (stream LsNodeEvent) {}
     rpc SubscribeToLsLinks(TopologySubscription) returns (stream LsLinkEvent) {}
     rpc SubscribeToTelemetryData(TelemetrySubscription) returns (stream TelemetryEvent) {}
