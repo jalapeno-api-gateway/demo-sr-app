@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,13 +13,12 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	"github.com/jalapeno-api-gateway/demo-sr-app/proto/subscriptionservice"
 	"github.com/jalapeno-api-gateway/demo-sr-app/proto/requestservice"
+	"github.com/jalapeno-api-gateway/demo-sr-app/proto/subscriptionservice"
 )
 
 func main() {
 	log.Print("Starting SR-App ...")
-
 	//Connecting to Request Service
 	var rsConn *grpc.ClientConn
 	rsConn, rsErr := grpc.Dial(os.Getenv("REQUEST_SERVICE_ADDRESS"), grpc.WithInsecure())
@@ -83,7 +83,7 @@ func GetDataRates(client requestservice.RequestServiceClient) {
 	}
 	
 	propertyNames := []string{
-		"DataRate",
+		"State",
 	}
 
 	message := &requestservice.TelemetryRequest{Ipv4Addresses: ips, PropertyNames: propertyNames}
@@ -91,10 +91,7 @@ func GetDataRates(client requestservice.RequestServiceClient) {
 	if err != nil {
 		log.Fatalf("Error when calling GetDataRates on RequestService: %s", err)
 	}
-	for _, telemetryData := range response.TelemetryData {
-		printDataRate(telemetryData)
-	}
-	log.Print("--------------------")
+	printResponse(response)
 }
 
 func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) {
@@ -134,9 +131,8 @@ func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) 
 		if err != nil {
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
 		}
-		printDataRateFromSubscriptionService(event.Ipv4Address, event.DataRate)
+		printResponse(event)
 	}
-	log.Print("--------------------")
 }
 
 func SubscribeToPacketsSentAndReceived(client subscriptionservice.SubscriptionServiceClient) {
@@ -177,10 +173,8 @@ func SubscribeToPacketsSentAndReceived(client subscriptionservice.SubscriptionSe
 		if err != nil {
 			log.Fatalf("%v.SubscribeToPacketsSentAndReceived(_) = _, %v", client, err)
 		}
-		printPacketsSent(event.Ipv4Address, event.PacketsSent)
-		printPacketsReceived(event.Ipv4Address, event.PacketsReceived)
+		printResponse(event)
 	}
-	log.Print("--------------------")
 }
 
 func SubscribeToEverything(client subscriptionservice.SubscriptionServiceClient) {
@@ -215,13 +209,8 @@ func SubscribeToEverything(client subscriptionservice.SubscriptionServiceClient)
 		if err != nil {
 			log.Fatalf("%v.SubscribeToEverything(_) = _, %v", client, err)
 		}
-		printPacketsSent(event.Ipv4Address, event.PacketsSent)
-		printPacketsReceived(event.Ipv4Address, event.PacketsReceived)
-		printDataRateFromSubscriptionService(event.Ipv4Address, event.DataRate)
-		printState(event.Ipv4Address, event.State)
-		printLastStateTransitionTime(event.Ipv4Address, event.LastStateTransitionTime)
+		printResponse(event)
 	}
-	log.Print("--------------------")
 }
 
 //
@@ -241,7 +230,7 @@ func SubscribeToSpecificLinks(client subscriptionservice.SubscriptionServiceClie
 		"2_0_2_0_0000.0000.000b_2001:db8:117::11_0000.0000.0007_2001:db8:117::7",
 	}
 	message := &subscriptionservice.TopologySubscription{Keys: keys}
-	stream, err := client.SubscribeToLsLinks(ctx, message)
+	stream, err := client.SubscribeToLSLinks(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToSpecificLinks on SubscriptionService: %s", err)
 	}
@@ -264,9 +253,8 @@ func SubscribeToSpecificLinks(client subscriptionservice.SubscriptionServiceClie
 			}
 			log.Fatalf("%v.SubscribeToSpecificLinks(_) = _, %v", client, err)
 		}
-		printLinkEvent(link)
+		printResponse(link)
 	}
-	log.Print("--------------------")
 }
 
 func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
@@ -277,7 +265,7 @@ func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	message := &subscriptionservice.TopologySubscription{}
-	stream, err := client.SubscribeToLsLinks(ctx, message)
+	stream, err := client.SubscribeToLSLinks(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToAllLinks on SubscriptionService: %s", err)
 	}
@@ -300,9 +288,8 @@ func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
 			}
 			log.Fatalf("%v.SubscribeToAllLinks(_) = _, %v", client, err)
 		}
-		printLinkEvent(link)
+		printResponse(link)
 	}
-	log.Print("--------------------")
 }
 
 //
@@ -316,15 +303,12 @@ func GetAllNodes(client requestservice.RequestServiceClient) {
 	log.Printf("Requesting All Available Nodes")
 	
 	message := &requestservice.TopologyRequest{}
-	response, err := client.GetLsNodes(context.Background(), message)
+	response, err := client.GetLSNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
-
-	for _, lsNode := range response.LsNodes {
-		printNode(lsNode)
-	}
-	log.Print("--------------------")
+	
+	printResponse(response)
 }
 
 //TODO: Error Handling
@@ -338,106 +322,24 @@ func GetSpecificNodes(client requestservice.RequestServiceClient) {
 		"invalid",
 	}
 	propertyNames := []string{
-		"RouterIp",
+		"RouterIP",
 		"Name",
+		"ASN",
+		"Timestamp",
 	}
 	message := &requestservice.TopologyRequest{Keys: keys, PropertyNames: propertyNames}
-	response, err := client.GetLsNodes(context.Background(), message)
+	response, err := client.GetLSNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
 
-	for _, lsNode := range response.LsNodes {
-		printNode(lsNode)
-	}
-	log.Print("--------------------")
+	printResponse(response)
 }
 
-//
-//
-// -----> PRINTERS <-----
-//
-//
-
-func printNode(node *requestservice.LsNode) {
-	log.Printf(">>> Received Node \"%s\"\n", *node.Name)
-	log.Printf("  Key: %s", node.Key)
-	log.Printf("  Name: %s", *node.Name)
-	if node.Asn != nil {
-		log.Printf("  Asn: %d", *node.Asn)
-	}
-	if node.RouterIp != nil {
-		log.Printf("  RouterIp: %s", *node.RouterIp)
-	}
-}
-
-func printLink(link *requestservice.LsLink) {
-	log.Printf(">>> Received Link\n")
-	log.Printf("  Key: %s", link.Key)
-	log.Printf("  RouterIp: %s", *link.RouterIp)
-	log.Printf("  PeerIp: %s", *link.PeerIp)
-	log.Printf("  LocalLinkIp: %s", *link.LocalLinkIp)
-	log.Printf("  RemoteLinkIp: %s", *link.RemoteLinkIp)
-	log.Printf("  IgpMetric: %d", *link.IgpMetric)
-}
-
-func printLinkEvent(event *subscriptionservice.LsLinkEvent) {
-	log.Printf(">>> Received LinkEvent\n")
-	log.Printf("  Action: %s", event.Action)
-	log.Printf("  Key: %s", event.LsLink.Key)
-	log.Printf("  RouterIp: %s", *event.LsLink.RouterIp)
-	log.Printf("  PeerIp: %s", *event.LsLink.PeerIp)
-	log.Printf("  LocalLinkIp: %s", *event.LsLink.LocalLinkIp)
-	log.Printf("  RemoteLinkIp: %s", *event.LsLink.RemoteLinkIp)
-	log.Printf("  IgpMetric: %d", *event.LsLink.IgpMetric)
-}
-
-func printDataRate(response *requestservice.TelemetryData) {
-	log.Printf(">>> Received DataRate\n")
-	log.Printf("  Ipv4Address: %s", response.Ipv4Address)
-	if response.DataRate != nil {
-		log.Printf("  DataRate: %d", *response.DataRate)
-	}
-}
-
-func printDataRateFromSubscriptionService(ip string, dataRate *int64) {
-	log.Printf(">>> Received DataRate\n")
-	log.Printf("  Ipv4Address: %s", ip)
-	if dataRate != nil {
-		log.Printf("  DataRate: %d", *dataRate)
-	}
-}
-
-func printPacketsSent(ip string, packetsSent *int64) {
-	log.Printf(">>> Received PacketsSent\n")
-	log.Printf("  Ipv4Address: %s", ip)
-	if packetsSent != nil {
-		log.Printf("  PacketsSent: %d", *packetsSent)
-	}
-}
-
-func printPacketsReceived(ip string, packetsReceived *int64) {
-	log.Printf(">>> Received PacketsReceived\n")
-	log.Printf("  Ipv4Address: %s", ip)
-	if packetsReceived != nil {
-		log.Printf("  PacketsReceived: %d", *packetsReceived)
-	}
-}
-
-func printState(ip string, state *string) {
-	log.Printf(">>> Received State\n")
-	log.Printf("  Ipv4Address: %s", ip)
-	if state != nil {
-		log.Printf("  State: %s", *state)
-	}
-}
-
-func printLastStateTransitionTime(ip string, lastStateTransitionTime *int64) {
-	log.Printf(">>> Received LastStateTransitionTime\n")
-	log.Printf("  Ipv4Address: %s", ip)
-	if lastStateTransitionTime != nil {
-		log.Printf("  LastStateTransitionTime: %d", *lastStateTransitionTime)
-	}
+func printResponse(response interface{}) {
+	log.Print("---------- RESPONSE ----------")
+	s, _ := json.MarshalIndent(response, "", "  ")
+	fmt.Printf("%s\n\n", string(s))
 }
 
 func allowUserToCancel(cancelled chan bool) {

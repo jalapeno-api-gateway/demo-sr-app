@@ -18,8 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SubscriptionServiceClient interface {
-	SubscribeToLsNodes(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLsNodesClient, error)
-	SubscribeToLsLinks(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLsLinksClient, error)
+	SubscribeToLSNodes(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSNodesClient, error)
+	SubscribeToLSLinks(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSLinksClient, error)
+	SubscribeToLSPrefixes(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSPrefixesClient, error)
+	SubscribeToLSSRv6SIDs(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSSRv6SIDsClient, error)
 	SubscribeToTelemetryData(ctx context.Context, in *TelemetrySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToTelemetryDataClient, error)
 }
 
@@ -31,12 +33,12 @@ func NewSubscriptionServiceClient(cc grpc.ClientConnInterface) SubscriptionServi
 	return &subscriptionServiceClient{cc}
 }
 
-func (c *subscriptionServiceClient) SubscribeToLsNodes(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLsNodesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[0], "/subscriptionservice.SubscriptionService/SubscribeToLsNodes", opts...)
+func (c *subscriptionServiceClient) SubscribeToLSNodes(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSNodesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[0], "/subscriptionservice.SubscriptionService/SubscribeToLSNodes", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &subscriptionServiceSubscribeToLsNodesClient{stream}
+	x := &subscriptionServiceSubscribeToLSNodesClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -46,29 +48,29 @@ func (c *subscriptionServiceClient) SubscribeToLsNodes(ctx context.Context, in *
 	return x, nil
 }
 
-type SubscriptionService_SubscribeToLsNodesClient interface {
-	Recv() (*LsNodeEvent, error)
+type SubscriptionService_SubscribeToLSNodesClient interface {
+	Recv() (*LSNodeEvent, error)
 	grpc.ClientStream
 }
 
-type subscriptionServiceSubscribeToLsNodesClient struct {
+type subscriptionServiceSubscribeToLSNodesClient struct {
 	grpc.ClientStream
 }
 
-func (x *subscriptionServiceSubscribeToLsNodesClient) Recv() (*LsNodeEvent, error) {
-	m := new(LsNodeEvent)
+func (x *subscriptionServiceSubscribeToLSNodesClient) Recv() (*LSNodeEvent, error) {
+	m := new(LSNodeEvent)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *subscriptionServiceClient) SubscribeToLsLinks(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLsLinksClient, error) {
-	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[1], "/subscriptionservice.SubscriptionService/SubscribeToLsLinks", opts...)
+func (c *subscriptionServiceClient) SubscribeToLSLinks(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSLinksClient, error) {
+	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[1], "/subscriptionservice.SubscriptionService/SubscribeToLSLinks", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &subscriptionServiceSubscribeToLsLinksClient{stream}
+	x := &subscriptionServiceSubscribeToLSLinksClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -78,17 +80,81 @@ func (c *subscriptionServiceClient) SubscribeToLsLinks(ctx context.Context, in *
 	return x, nil
 }
 
-type SubscriptionService_SubscribeToLsLinksClient interface {
-	Recv() (*LsLinkEvent, error)
+type SubscriptionService_SubscribeToLSLinksClient interface {
+	Recv() (*LSLinkEvent, error)
 	grpc.ClientStream
 }
 
-type subscriptionServiceSubscribeToLsLinksClient struct {
+type subscriptionServiceSubscribeToLSLinksClient struct {
 	grpc.ClientStream
 }
 
-func (x *subscriptionServiceSubscribeToLsLinksClient) Recv() (*LsLinkEvent, error) {
-	m := new(LsLinkEvent)
+func (x *subscriptionServiceSubscribeToLSLinksClient) Recv() (*LSLinkEvent, error) {
+	m := new(LSLinkEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *subscriptionServiceClient) SubscribeToLSPrefixes(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSPrefixesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[2], "/subscriptionservice.SubscriptionService/SubscribeToLSPrefixes", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &subscriptionServiceSubscribeToLSPrefixesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type SubscriptionService_SubscribeToLSPrefixesClient interface {
+	Recv() (*LSPrefixEvent, error)
+	grpc.ClientStream
+}
+
+type subscriptionServiceSubscribeToLSPrefixesClient struct {
+	grpc.ClientStream
+}
+
+func (x *subscriptionServiceSubscribeToLSPrefixesClient) Recv() (*LSPrefixEvent, error) {
+	m := new(LSPrefixEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *subscriptionServiceClient) SubscribeToLSSRv6SIDs(ctx context.Context, in *TopologySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToLSSRv6SIDsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[3], "/subscriptionservice.SubscriptionService/SubscribeToLSSRv6SIDs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &subscriptionServiceSubscribeToLSSRv6SIDsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type SubscriptionService_SubscribeToLSSRv6SIDsClient interface {
+	Recv() (*LSSRv6SIDEvent, error)
+	grpc.ClientStream
+}
+
+type subscriptionServiceSubscribeToLSSRv6SIDsClient struct {
+	grpc.ClientStream
+}
+
+func (x *subscriptionServiceSubscribeToLSSRv6SIDsClient) Recv() (*LSSRv6SIDEvent, error) {
+	m := new(LSSRv6SIDEvent)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -96,7 +162,7 @@ func (x *subscriptionServiceSubscribeToLsLinksClient) Recv() (*LsLinkEvent, erro
 }
 
 func (c *subscriptionServiceClient) SubscribeToTelemetryData(ctx context.Context, in *TelemetrySubscription, opts ...grpc.CallOption) (SubscriptionService_SubscribeToTelemetryDataClient, error) {
-	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[2], "/subscriptionservice.SubscriptionService/SubscribeToTelemetryData", opts...)
+	stream, err := c.cc.NewStream(ctx, &SubscriptionService_ServiceDesc.Streams[4], "/subscriptionservice.SubscriptionService/SubscribeToTelemetryData", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +197,10 @@ func (x *subscriptionServiceSubscribeToTelemetryDataClient) Recv() (*TelemetryEv
 // All implementations must embed UnimplementedSubscriptionServiceServer
 // for forward compatibility
 type SubscriptionServiceServer interface {
-	SubscribeToLsNodes(*TopologySubscription, SubscriptionService_SubscribeToLsNodesServer) error
-	SubscribeToLsLinks(*TopologySubscription, SubscriptionService_SubscribeToLsLinksServer) error
+	SubscribeToLSNodes(*TopologySubscription, SubscriptionService_SubscribeToLSNodesServer) error
+	SubscribeToLSLinks(*TopologySubscription, SubscriptionService_SubscribeToLSLinksServer) error
+	SubscribeToLSPrefixes(*TopologySubscription, SubscriptionService_SubscribeToLSPrefixesServer) error
+	SubscribeToLSSRv6SIDs(*TopologySubscription, SubscriptionService_SubscribeToLSSRv6SIDsServer) error
 	SubscribeToTelemetryData(*TelemetrySubscription, SubscriptionService_SubscribeToTelemetryDataServer) error
 	mustEmbedUnimplementedSubscriptionServiceServer()
 }
@@ -141,11 +209,17 @@ type SubscriptionServiceServer interface {
 type UnimplementedSubscriptionServiceServer struct {
 }
 
-func (UnimplementedSubscriptionServiceServer) SubscribeToLsNodes(*TopologySubscription, SubscriptionService_SubscribeToLsNodesServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeToLsNodes not implemented")
+func (UnimplementedSubscriptionServiceServer) SubscribeToLSNodes(*TopologySubscription, SubscriptionService_SubscribeToLSNodesServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToLSNodes not implemented")
 }
-func (UnimplementedSubscriptionServiceServer) SubscribeToLsLinks(*TopologySubscription, SubscriptionService_SubscribeToLsLinksServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeToLsLinks not implemented")
+func (UnimplementedSubscriptionServiceServer) SubscribeToLSLinks(*TopologySubscription, SubscriptionService_SubscribeToLSLinksServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToLSLinks not implemented")
+}
+func (UnimplementedSubscriptionServiceServer) SubscribeToLSPrefixes(*TopologySubscription, SubscriptionService_SubscribeToLSPrefixesServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToLSPrefixes not implemented")
+}
+func (UnimplementedSubscriptionServiceServer) SubscribeToLSSRv6SIDs(*TopologySubscription, SubscriptionService_SubscribeToLSSRv6SIDsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeToLSSRv6SIDs not implemented")
 }
 func (UnimplementedSubscriptionServiceServer) SubscribeToTelemetryData(*TelemetrySubscription, SubscriptionService_SubscribeToTelemetryDataServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeToTelemetryData not implemented")
@@ -163,45 +237,87 @@ func RegisterSubscriptionServiceServer(s grpc.ServiceRegistrar, srv Subscription
 	s.RegisterService(&SubscriptionService_ServiceDesc, srv)
 }
 
-func _SubscriptionService_SubscribeToLsNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _SubscriptionService_SubscribeToLSNodes_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(TopologySubscription)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SubscriptionServiceServer).SubscribeToLsNodes(m, &subscriptionServiceSubscribeToLsNodesServer{stream})
+	return srv.(SubscriptionServiceServer).SubscribeToLSNodes(m, &subscriptionServiceSubscribeToLSNodesServer{stream})
 }
 
-type SubscriptionService_SubscribeToLsNodesServer interface {
-	Send(*LsNodeEvent) error
+type SubscriptionService_SubscribeToLSNodesServer interface {
+	Send(*LSNodeEvent) error
 	grpc.ServerStream
 }
 
-type subscriptionServiceSubscribeToLsNodesServer struct {
+type subscriptionServiceSubscribeToLSNodesServer struct {
 	grpc.ServerStream
 }
 
-func (x *subscriptionServiceSubscribeToLsNodesServer) Send(m *LsNodeEvent) error {
+func (x *subscriptionServiceSubscribeToLSNodesServer) Send(m *LSNodeEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _SubscriptionService_SubscribeToLsLinks_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _SubscriptionService_SubscribeToLSLinks_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(TopologySubscription)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SubscriptionServiceServer).SubscribeToLsLinks(m, &subscriptionServiceSubscribeToLsLinksServer{stream})
+	return srv.(SubscriptionServiceServer).SubscribeToLSLinks(m, &subscriptionServiceSubscribeToLSLinksServer{stream})
 }
 
-type SubscriptionService_SubscribeToLsLinksServer interface {
-	Send(*LsLinkEvent) error
+type SubscriptionService_SubscribeToLSLinksServer interface {
+	Send(*LSLinkEvent) error
 	grpc.ServerStream
 }
 
-type subscriptionServiceSubscribeToLsLinksServer struct {
+type subscriptionServiceSubscribeToLSLinksServer struct {
 	grpc.ServerStream
 }
 
-func (x *subscriptionServiceSubscribeToLsLinksServer) Send(m *LsLinkEvent) error {
+func (x *subscriptionServiceSubscribeToLSLinksServer) Send(m *LSLinkEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _SubscriptionService_SubscribeToLSPrefixes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TopologySubscription)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SubscriptionServiceServer).SubscribeToLSPrefixes(m, &subscriptionServiceSubscribeToLSPrefixesServer{stream})
+}
+
+type SubscriptionService_SubscribeToLSPrefixesServer interface {
+	Send(*LSPrefixEvent) error
+	grpc.ServerStream
+}
+
+type subscriptionServiceSubscribeToLSPrefixesServer struct {
+	grpc.ServerStream
+}
+
+func (x *subscriptionServiceSubscribeToLSPrefixesServer) Send(m *LSPrefixEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _SubscriptionService_SubscribeToLSSRv6SIDs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TopologySubscription)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SubscriptionServiceServer).SubscribeToLSSRv6SIDs(m, &subscriptionServiceSubscribeToLSSRv6SIDsServer{stream})
+}
+
+type SubscriptionService_SubscribeToLSSRv6SIDsServer interface {
+	Send(*LSSRv6SIDEvent) error
+	grpc.ServerStream
+}
+
+type subscriptionServiceSubscribeToLSSRv6SIDsServer struct {
+	grpc.ServerStream
+}
+
+func (x *subscriptionServiceSubscribeToLSSRv6SIDsServer) Send(m *LSSRv6SIDEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -235,13 +351,23 @@ var SubscriptionService_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "SubscribeToLsNodes",
-			Handler:       _SubscriptionService_SubscribeToLsNodes_Handler,
+			StreamName:    "SubscribeToLSNodes",
+			Handler:       _SubscriptionService_SubscribeToLSNodes_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "SubscribeToLsLinks",
-			Handler:       _SubscriptionService_SubscribeToLsLinks_Handler,
+			StreamName:    "SubscribeToLSLinks",
+			Handler:       _SubscriptionService_SubscribeToLSLinks_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeToLSPrefixes",
+			Handler:       _SubscriptionService_SubscribeToLSPrefixes_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeToLSSRv6SIDs",
+			Handler:       _SubscriptionService_SubscribeToLSSRv6SIDs_Handler,
 			ServerStreams: true,
 		},
 		{
