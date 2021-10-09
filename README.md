@@ -6,8 +6,10 @@ It makes some requests and subscriptions to the Jalapeño API Gateway and prints
 
 ## Run Demo
 
-To run the demo, install (golang)[https://golang.org/doc/install] on your machine and clone this repository, then run the following command (**server-address** points to the server where the Jalapeño API Gateway is installed):
+To run the demo, install [golang](https://golang.org/doc/install) on your machine and clone this repository, then run the following command:
 
 ```bash
 go run main.go <server-address>
 ```
+
+The **server-address** points to the server where the Jalapeño API Gateway is installed.
