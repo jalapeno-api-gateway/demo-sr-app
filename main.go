@@ -43,7 +43,7 @@ func main() {
 
 	input := bufio.NewScanner(os.Stdin)
 
-	fmt.Print("Press any key to: REQUEST ALL NODES")
+	fmt.Print("Press 'Enter' to: REQUEST ALL NODES")
 	input.Scan()
 	GetAllNodes(rsClient)
 
