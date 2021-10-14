@@ -9,7 +9,7 @@ It makes some requests and subscriptions to the Jalapeño API Gateway and prints
 To run the demo, install [golang](https://golang.org/doc/install) on your machine and clone this repository, then run the following command in the root directory of the project:
 
 ```bash
-go run main.go <server-address>
+go run main.go <server-address> <request-service-port> <subscription-service-port>
 ```
 
 The **server-address** points to the server where the Jalapeño API Gateway is installed.
