@@ -19,8 +19,10 @@ func main() {
 	log.Print("Starting SR-App ...")
 
 	server := os.Args[1]
-	requestService := fmt.Sprintf("%s:30061", server)
-	subscriptionService := fmt.Sprintf("%s:30060", server)
+	requestServicePort := os.Args[2]
+	subscriptionServicePort := os.Args[3]
+	requestService := fmt.Sprintf("%s:%s", server, requestServicePort)
+	subscriptionService := fmt.Sprintf("%s:%s", server, subscriptionServicePort)
 
 	//Connecting to Request Service
 	var rsConn *grpc.ClientConn
@@ -136,13 +138,13 @@ func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
 func GetAllNodes(client requestservice.RequestServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting All Available Nodes")
-	
+
 	message := &requestservice.TopologyRequest{}
 	response, err := client.GetLSNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
-	
+
 	printResponse(response)
 }
 
