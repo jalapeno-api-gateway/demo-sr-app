@@ -53,6 +53,10 @@ func main() {
 	input.Scan()
 	GetSpecificNodes(rsClient)
 
+	fmt.Print("Press 'Enter' to: REQUEST DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	input.Scan()
+	GetDataRates(rsClient)
+
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO ALL LINKS")
 	input.Scan()
 	SubscribeToAllLinks(psClient)
@@ -60,6 +64,14 @@ func main() {
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINK")
 	input.Scan()
 	SubscribeToSpecificLink(psClient)
+
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO DATA RATES OF SPECIFIC IPV4ADDRESSES")
+	input.Scan()
+	SubscribeToDataRates(psClient)
+
+	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO PACKETS SENT AND RECEIVED OF SPECIFIC IPV4ADDRESSES")
+	// input.Scan()
+	// SubscribeToPacketsSentAndReceived(psClient)
 }
 
 func SubscribeToSpecificLink(client subscriptionservice.SubscriptionServiceClient) {
@@ -133,6 +145,75 @@ func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
 		}
 		printResponse(link)
 	}
+}
+
+func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To Specific DataRates")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	propertyNames := []string{
+		"DataRate",
+	}
+
+	message := &subscriptionservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	stream, err := client.SubscribeToTelemetryData(ctx, message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToDataRates on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
+	for {
+		event, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			//client canceled so we exit the loop
+			break
+		}
+		if err != nil {
+			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
+		}
+		printResponse(event)
+	}
+	log.Print("--------------------")
+}
+
+func GetDataRates(client requestservice.RequestServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Requesting Specific DataRates")
+
+	ips := []string{
+		// "10.18.8.53",
+		// "10.18.8.54",
+		// "invalid",
+		"10.18.8.41",
+	}
+
+	propertyNames := []string{
+		"DataRate",
+	}
+
+	message := &requestservice.TelemetryRequest{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	response, err := client.GetTelemetryData(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling GetDataRates on RequestService: %s", err)
+	}
+	// for _, telemetryData := range response.TelemetryData {
+	// 	printResponse(telemetryData)
+	// }
+	// log.Print("--------------------")
+	printResponse(response)
 }
 
 func GetAllNodes(client requestservice.RequestServiceClient) {
