@@ -69,9 +69,9 @@ func main() {
 	input.Scan()
 	SubscribeToDataRates(psClient)
 
-	// fmt.Print("Press 'Enter' to: SUBSCRIBE TO PACKETS SENT AND RECEIVED OF SPECIFIC IPV4ADDRESSES")
-	// input.Scan()
-	// SubscribeToPacketsSentAndReceived(psClient)
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO PACKETS SENT AND RECEIVED OF SPECIFIC IPV4ADDRESSES")
+	input.Scan()
+	SubscribeToPacketsSentAndReceived(psClient)
 }
 
 func SubscribeToSpecificLink(client subscriptionservice.SubscriptionServiceClient) {
@@ -183,6 +183,49 @@ func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) 
 		}
 		if err != nil {
 			log.Fatalf("%v.SubscribeToDataRates(_) = _, %v", client, err)
+		}
+		printResponse(event)
+	}
+	log.Print("--------------------")
+}
+
+func SubscribeToPacketsSentAndReceived(client subscriptionservice.SubscriptionServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To PacketsSent")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	propertyNames := []string{
+		"PacketsSent",
+		"PacketsReceived",
+	}
+	message := &subscriptionservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	stream, err := client.SubscribeToTelemetryData(ctx, message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToPacketsSentAndReceived on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
+	for {
+		event, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			//client canceled so we exit the loop
+			break
+		}
+		if err != nil {
+			log.Fatalf("%v.SubscribeToPacketsSentAndReceived(_) = _, %v", client, err)
 		}
 		printResponse(event)
 	}
