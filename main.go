@@ -10,19 +10,24 @@ import (
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 
-	"github.com/jalapeno-api-gateway/demo-sr-app/proto/requestservice"
-	"github.com/jalapeno-api-gateway/demo-sr-app/proto/subscriptionservice"
+	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
 )
 
 func main() {
 	log.Print("Starting SR-App ...")
 
+	// For production
 	server := os.Args[1]
 	requestServicePort := os.Args[2]
 	subscriptionServicePort := os.Args[3]
 	requestService := fmt.Sprintf("%s:%s", server, requestServicePort)
 	subscriptionService := fmt.Sprintf("%s:%s", server, subscriptionServicePort)
+
+	// For dev env
+	// requestService := os.Getenv("REQUEST_SERVICE_ADDRESS")
+	// subscriptionService := os.Getenv("SUBSCRIPTION_SERVICE_ADDRESS")
 
 	//Connecting to Request Service
 	var rsConn *grpc.ClientConn
@@ -40,8 +45,8 @@ func main() {
 	}
 	defer psConn.Close()
 
-	rsClient := requestservice.NewRequestServiceClient(rsConn)
-	psClient := subscriptionservice.NewSubscriptionServiceClient(psConn)
+	rsClient := jagw.NewRequestServiceClient(rsConn)
+	psClient := jagw.NewSubscriptionServiceClient(psConn)
 
 	input := bufio.NewScanner(os.Stdin)
 
@@ -74,7 +79,7 @@ func main() {
 	SubscribeToPacketsSentAndReceived(psClient)
 }
 
-func SubscribeToSpecificLink(client subscriptionservice.SubscriptionServiceClient) {
+func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To Specific Link")
 
@@ -84,8 +89,8 @@ func SubscribeToSpecificLink(client subscriptionservice.SubscriptionServiceClien
 	keys := []string{
 		"2_0_2_0_0000.0000.0001_2001:db8:12::1_0000.0000.0002_2001:db8:12::2",
 	}
-	message := &subscriptionservice.TopologySubscription{Keys: keys}
-	stream, err := client.SubscribeToLSLinks(ctx, message)
+	message := &jagw.TopologySubscription{Keys: keys}
+	stream, err := client.SubscribeToLsLinks(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToSpecificLinks on SubscriptionService: %s", err)
 	}
@@ -112,15 +117,15 @@ func SubscribeToSpecificLink(client subscriptionservice.SubscriptionServiceClien
 	}
 }
 
-func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
+func SubscribeToAllLinks(client jagw.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To All Links")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 
-	message := &subscriptionservice.TopologySubscription{}
-	stream, err := client.SubscribeToLSLinks(ctx, message)
+	message := &jagw.TopologySubscription{}
+	stream, err := client.SubscribeToLsLinks(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToAllLinks on SubscriptionService: %s", err)
 	}
@@ -147,18 +152,22 @@ func SubscribeToAllLinks(client subscriptionservice.SubscriptionServiceClient) {
 	}
 }
 
-func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) {
+func SubscribeToDataRates(client jagw.SubscriptionServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Subscribing To Specific DataRates")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
-	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	
+	interfaceIds := []*jagw.InterfaceIdentifier{
+		{Hostname: proto.String("XR-8"), LinkId: proto.Int32(10)},
+	}
+
 	propertyNames := []string{
 		"DataRate",
 	}
 
-	message := &subscriptionservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	message := &jagw.TelemetrySubscription{InterfaceIds: interfaceIds, PropertyNames: propertyNames}
 	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToDataRates on PushService: %s", err)
@@ -189,19 +198,23 @@ func SubscribeToDataRates(client subscriptionservice.SubscriptionServiceClient) 
 	log.Print("--------------------")
 }
 
-func SubscribeToPacketsSentAndReceived(client subscriptionservice.SubscriptionServiceClient) {
+func SubscribeToPacketsSentAndReceived(client jagw.SubscriptionServiceClient) {
 	log.Print("--------------------")
-	log.Printf("Subscribing To PacketsSent")
+	log.Printf("Subscribing To PacketsSent And PacketsReceived")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 
-	ips := []string{"10.18.8.53", "10.18.8.54", "10.1.234.13"}
+	interfaceIds := []*jagw.InterfaceIdentifier{
+		{Hostname: proto.String("XR-8"), LinkId: proto.Int32(10)},
+	}
+
 	propertyNames := []string{
 		"PacketsSent",
 		"PacketsReceived",
 	}
-	message := &subscriptionservice.TelemetrySubscription{Ipv4Addresses: ips, PropertyNames: propertyNames}
+
+	message := &jagw.TelemetrySubscription{InterfaceIds: interfaceIds, PropertyNames: propertyNames}
 	stream, err := client.SubscribeToTelemetryData(ctx, message)
 	if err != nil {
 		log.Fatalf("Error when calling SubscribeToPacketsSentAndReceived on PushService: %s", err)
@@ -232,22 +245,19 @@ func SubscribeToPacketsSentAndReceived(client subscriptionservice.SubscriptionSe
 	log.Print("--------------------")
 }
 
-func GetDataRates(client requestservice.RequestServiceClient) {
+func GetDataRates(client jagw.RequestServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting Specific DataRates")
 
-	ips := []string{
-		// "10.18.8.53",
-		// "10.18.8.54",
-		// "invalid",
-		"10.18.8.41",
+	interfaceIds := []*jagw.InterfaceIdentifier{
+		{Hostname: proto.String("XR-8"), LinkId: proto.Int32(10)},
 	}
 
 	propertyNames := []string{
 		"DataRate",
 	}
 
-	message := &requestservice.TelemetryRequest{Ipv4Addresses: ips, PropertyNames: propertyNames}
+	message := &jagw.TelemetryRequest{InterfaceIds: interfaceIds, PropertyNames: propertyNames}
 	response, err := client.GetTelemetryData(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetDataRates on RequestService: %s", err)
@@ -259,12 +269,12 @@ func GetDataRates(client requestservice.RequestServiceClient) {
 	printResponse(response)
 }
 
-func GetAllNodes(client requestservice.RequestServiceClient) {
+func GetAllNodes(client jagw.RequestServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting All Available Nodes")
 
-	message := &requestservice.TopologyRequest{}
-	response, err := client.GetLSNodes(context.Background(), message)
+	message := &jagw.TopologyRequest{}
+	response, err := client.GetLsNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
@@ -272,7 +282,7 @@ func GetAllNodes(client requestservice.RequestServiceClient) {
 	printResponse(response)
 }
 
-func GetSpecificNodes(client requestservice.RequestServiceClient) {
+func GetSpecificNodes(client jagw.RequestServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting Name and ASN of Two Specific Nodes ...")
 
@@ -284,8 +294,8 @@ func GetSpecificNodes(client requestservice.RequestServiceClient) {
 		"Name",
 		"ASN",
 	}
-	message := &requestservice.TopologyRequest{Keys: keys, PropertyNames: propertyNames}
-	response, err := client.GetLSNodes(context.Background(), message)
+	message := &jagw.TopologyRequest{Keys: keys, PropertyNames: propertyNames}
+	response, err := client.GetLsNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
 	}
