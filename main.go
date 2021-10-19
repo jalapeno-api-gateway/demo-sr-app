@@ -19,15 +19,15 @@ func main() {
 	log.Print("Starting SR-App ...")
 
 	// For production
-	server := os.Args[1]
-	requestServicePort := os.Args[2]
-	subscriptionServicePort := os.Args[3]
-	requestService := fmt.Sprintf("%s:%s", server, requestServicePort)
-	subscriptionService := fmt.Sprintf("%s:%s", server, subscriptionServicePort)
+	// server := os.Args[1]
+	// requestServicePort := os.Args[2]
+	// subscriptionServicePort := os.Args[3]
+	// requestService := fmt.Sprintf("%s:%s", server, requestServicePort)
+	// subscriptionService := fmt.Sprintf("%s:%s", server, subscriptionServicePort)
 
 	// For dev env
-	// requestService := os.Getenv("REQUEST_SERVICE_ADDRESS")
-	// subscriptionService := os.Getenv("SUBSCRIPTION_SERVICE_ADDRESS")
+	requestService := os.Getenv("REQUEST_SERVICE_ADDRESS")
+	subscriptionService := os.Getenv("SUBSCRIPTION_SERVICE_ADDRESS")
 
 	//Connecting to Request Service
 	var rsConn *grpc.ClientConn
@@ -77,6 +77,14 @@ func main() {
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO PACKETS SENT AND RECEIVED OF SPECIFIC IPV4ADDRESSES")
 	input.Scan()
 	SubscribeToPacketsSentAndReceived(psClient)
+	
+	fmt.Print("Press 'Enter' to: REQUEST ALL NODE-EDGES")
+	input.Scan()
+	GetAllLsNodeEdges(rsClient)
+
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO LSNODE_EDGES")
+	input.Scan()
+	SubscribeToLsNodeEdges(psClient)
 }
 
 func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
@@ -245,6 +253,44 @@ func SubscribeToPacketsSentAndReceived(client jagw.SubscriptionServiceClient) {
 	log.Print("--------------------")
 }
 
+func SubscribeToLsNodeEdges(client jagw.SubscriptionServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Subscribing To LsNodeEdges")
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	message := &jagw.TopologySubscription{}
+	stream, err := client.SubscribeToLsNodeEdges(ctx, message)
+	if err != nil {
+		log.Fatalf("Error when calling SubscribeToLsNodeEdges on PushService: %s", err)
+	}
+
+	cancelled := make(chan bool, 1)
+	go allowUserToCancel(cancelled)
+	go func() {
+		<-cancelled
+		cancel()
+	}()
+
+	for {
+		event, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		// ctx.Err != nil if the context was canceled
+		if ctx.Err() != nil {
+			//client canceled so we exit the loop
+			break
+		}
+		if err != nil {
+			log.Fatalf("%v.SubscribeToLsNodeEdges(_) = _, %v", client, err)
+		}
+		printResponse(event)
+	}
+	log.Print("--------------------")
+}
+
 func GetDataRates(client jagw.RequestServiceClient) {
 	log.Print("--------------------")
 	log.Printf("Requesting Specific DataRates")
@@ -298,6 +344,19 @@ func GetSpecificNodes(client jagw.RequestServiceClient) {
 	response, err := client.GetLsNodes(context.Background(), message)
 	if err != nil {
 		log.Fatalf("Error when calling GetNodes on RequestService: %s", err)
+	}
+
+	printResponse(response)
+}
+
+func GetAllLsNodeEdges(client jagw.RequestServiceClient) {
+	log.Print("--------------------")
+	log.Printf("Requesting All Available LsNodeEdges")
+
+	message := &jagw.TopologyRequest{}
+	response, err := client.GetLsNodeEdges(context.Background(), message)
+	if err != nil {
+		log.Fatalf("Error when calling GetAllLsNodeEdges on RequestService: %s", err)
 	}
 
 	printResponse(response)
