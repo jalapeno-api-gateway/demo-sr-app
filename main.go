@@ -19,15 +19,15 @@ func main() {
 	log.Print("Starting SR-App ...")
 
 	// For production
-	// server := os.Args[1]
-	// requestServicePort := os.Args[2]
-	// subscriptionServicePort := os.Args[3]
-	// requestService := fmt.Sprintf("%s:%s", server, requestServicePort)
-	// subscriptionService := fmt.Sprintf("%s:%s", server, subscriptionServicePort)
+	server := os.Args[1]
+	requestServicePort := os.Args[2]
+	subscriptionServicePort := os.Args[3]
+	requestService := fmt.Sprintf("%s:%s", server, requestServicePort)
+	subscriptionService := fmt.Sprintf("%s:%s", server, subscriptionServicePort)
 
 	// For dev env
-	requestService := os.Getenv("REQUEST_SERVICE_ADDRESS")
-	subscriptionService := os.Getenv("SUBSCRIPTION_SERVICE_ADDRESS")
+	// requestService := os.Getenv("REQUEST_SERVICE_ADDRESS")
+	// subscriptionService := os.Getenv("SUBSCRIPTION_SERVICE_ADDRESS")
 
 	//Connecting to Request Service
 	var rsConn *grpc.ClientConn
