@@ -13,3 +13,10 @@ go run main.go <server-address> <request-service-port> <subscription-service-por
 ```
 
 The **server-address** points to the server where the Jalapeño API Gateway is installed.
+
+The default ports for the services are:
+
+Service | Port
+--- | ---
+Request-Service | 30061
+Subscription-Service | 30060
