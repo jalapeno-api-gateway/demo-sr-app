@@ -34,3 +34,29 @@ func GetDataRatesOfSpecificNode(rsClient jagw.RequestServiceClient) {
 
 	prettyPrintTelemetryData(response)
 }
+
+func GetLatestMeasurement(rsClient jagw.RequestServiceClient, unflatten bool) {
+	request := &jagw.TelemetryRequest{
+		SensorPath: proto.String("Cisco-IOS-XR-pfi-im-cmd-oper:interfaces/interface-xr/interface"),
+		Properties: []string{
+			"source",
+			"if_index",
+			"data_rates/input_data_rate",
+			"data_rates/output_data_rate",
+			"arp_information/arp_timeout",
+			"arp_information/arp_type_name",
+		},
+		StringFilters: []*jagw.StringFilter{
+			// Filter for measurements where source == "XR-3"
+			{
+				Property: proto.String("source"),
+				Value: proto.String("XR-3"),
+				Operator: jagw.StringOperator_EQUAL.Enum(),
+			},
+		},
+		Unflatten: proto.Bool(unflatten),
+	}
+	response := api.RequestTelemetryData(rsClient, request)
+
+	prettyPrintTelemetryData(response)
+}

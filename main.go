@@ -82,6 +82,14 @@ func makeTelemetryRequests(rsClient jagw.RequestServiceClient) {
 	fmt.Print("Press 'Enter' to: REQUEST DATA RATES OF PAST 60 SECONDS OF SPECIFIC NODE")
 	input.Scan()
 	fetch.GetDataRatesOfSpecificNode(rsClient)
+	
+	fmt.Print("Press 'Enter' to: REQUEST LATEST MEASUREMENT WITHOUT UNFLATTEN")
+	input.Scan()
+	fetch.GetLatestMeasurement(rsClient, false)
+	
+	fmt.Print("Press 'Enter' to: REQUEST LATEST MEASUREMENT WITH UNFLATTEN")
+	input.Scan()
+	fetch.GetLatestMeasurement(rsClient, true)
 }
 
 func makeTopologySubscriptions(ssClient jagw.SubscriptionServiceClient) {
