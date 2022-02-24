@@ -18,7 +18,7 @@ func GetSpecificNodes(rsClient jagw.RequestServiceClient) {
 			"2_0_0_0000.0000.0005",
 			"2_0_0_0000.0000.000d",
 		},
-		PropertyNames: []string{
+		Properties: []string{
 			"Key",
 			"Name",
 			"Asn",

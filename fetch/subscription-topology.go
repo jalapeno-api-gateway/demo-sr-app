@@ -48,7 +48,7 @@ func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 		Keys: []string{
 			"2_0_2_0_0000.0000.000b_2001:db8:117::11_0000.0000.0007_2001:db8:117::7",
 		},
-		PropertyNames: []string{
+		Properties: []string{
 			"Key",
 			"LocalLinkIp",
 			"RemoteLinkIp",
