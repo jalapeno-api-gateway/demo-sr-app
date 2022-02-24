@@ -6,7 +6,7 @@ It makes some requests and subscriptions to the Jalapeño API Gateway and prints
 
 ## Run Demo
 
-To run the demo, install [golang](https://golang.org/doc/install) on your machine and clone this repository, then run the following command in the root directory of the project:
+To run the demo, install [golang](https://golang.org/doc/install) v1.16 or higher on your machine and clone this repository, then run the following command in the root directory of the project:
 
 ```bash
 go run main.go <server-address> <request-service-port> <subscription-service-port>
@@ -18,5 +18,5 @@ The default ports for the services are:
 
 Service | Port
 --- | ---
-Request-Service | 30061
-Subscription-Service | 30060
+Request-Service | 30050
+Subscription-Service | 30051
