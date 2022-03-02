@@ -16,14 +16,14 @@ func GetDataRatesOfSpecificNode(rsClient jagw.RequestServiceClient) {
 			"if_index",
 			"data_rates/input_data_rate",
 		},
-		StringFilters: []*jagw.StringFilter{
-			// Filter for measurements where source == "XR-3"
-			{
-				Property: proto.String("source"),
-				Value: proto.String("XR-3"),
-				Operator: jagw.StringOperator_EQUAL.Enum(),
-			},
-		},
+		// StringFilters: []*jagw.StringFilter{
+		// 	// Filter for measurements where source == "XR-3"
+		// 	{
+		// 		Property: proto.String("source"),
+		// 		Value: proto.String("XR-3"),
+		// 		Operator: jagw.StringOperator_EQUAL.Enum(),
+		// 	},
+		// },
 		Unflatten: proto.Bool(true),
 		RangeFilter: &jagw.RangeFilter{
 			// Get all measurements from the last 60 seconds
