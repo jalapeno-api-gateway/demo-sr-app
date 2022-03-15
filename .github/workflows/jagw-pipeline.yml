@@ -14,12 +14,20 @@ on:
         description: "Type (dev | release)"
         required: true
         type: string
+      protorepo_jagw_go_ref:
+        description: "Ref used by other go modules to import this version"
+        type: string
+        required: true
+      jagw_core_ref:
+        description: "Ref used by other go modules to import this version"
+        type: string
+        required: true
 
 jobs:
   call-update-dependencies:
     uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/update-dependencies.yml@dev
     with:
-      tag_name: ${{ github.event.inputs.tag_name }}
+      protorepo_jagw_go_ref: ${{ github.event.inputs.protorepo_jagw_go_ref }}
   call-merge-to-main:
     needs: call-update-dependencies
     if: github.event.inputs.type == 'release'
