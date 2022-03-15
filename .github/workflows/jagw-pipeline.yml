@@ -1,4 +1,4 @@
-name: JAGW Pipieline
+name: JAGW Pipeline
 
 on:
   workflow_dispatch:
