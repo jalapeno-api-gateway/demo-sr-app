@@ -1,0 +1,44 @@
+name: JAGW Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:   
+        required: true
+        type: string
+      build_branch:
+        description: "Build branch (dev | main)"
+        required: true
+        type: string
+      release_or_dev:
+        description: "Type (dev | release)"
+        required: true
+        type: string
+      protorepo_jagw_go_ref:
+        description: "Ref used by other go modules to import this version"
+        type: string
+        required: true
+      jagw_core_ref:
+        description: "Ref used by other go modules to import this version"
+        type: string
+        required: true
+
+jobs:
+  call-update-dependencies:
+    uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/update-dependencies.yml@dev
+    with:
+      protorepo_jagw_go_ref: ${{ github.event.inputs.protorepo_jagw_go_ref }}
+  call-merge-to-main:
+    needs: call-update-dependencies
+    if: github.event.inputs.release_or_dev == 'release'
+    uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/merge-to-main.yml@dev
+  call-create-tag:
+    needs: [call-merge-to-main]
+    uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/create-tag.yml@dev   
+    if: |
+      always() &&
+      (needs.call-merge-to-main.result == 'success' || needs.call-merge-to-main.result == 'skipped') &&
+      needs.call-update-dependencies.result == 'success'
+  call-create-release:
+    needs: [call-create-tag, call-merge-to-main]
+    uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/create-release.yml@dev

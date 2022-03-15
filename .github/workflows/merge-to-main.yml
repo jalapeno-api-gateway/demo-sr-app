@@ -1,0 +1,25 @@
+name: Merge To Main
+
+on: workflow_call
+  
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: create-pull-request
+        id: create-pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: dev
+          destination_branch: main
+          pr_title: "Auto-Generated PR: dev -> main"
+          pr_label: "automerge"
+          pr_allow_empty: true
+          github_token: ${{ github.token }}
+      - name: Automerge
+        uses: "pascalgn/automerge-action@v0.14.3"
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+          PULL_REQUEST: "${{ steps.create-pull-request.outputs.pr_number }}"

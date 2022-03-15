@@ -1,0 +1,26 @@
+name: Create Tag
+
+on: workflow_call
+ 
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.build_branch }}  
+          fetch-depth: 0
+      - name: Create tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const { TAG_NAME } = process.env
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${ TAG_NAME }`,
+              sha: context.sha
+            })
+        env:
+          TAG_NAME: "${{ github.event.inputs.tag_name }}"
