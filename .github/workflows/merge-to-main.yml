@@ -1,14 +1,6 @@
 name: Merge To Main
 
-on:
-  workflow_call:
-    inputs:
-      source_branch:
-        type: string
-        required: true
-      destination_branch:
-        type: string
-        required: true
+on: workflow_call
   
 jobs:
   merge-to-main:
