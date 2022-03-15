@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/jalapeno-api-gateway/protorepo-jagw-go v1.3.3-0.20220315153247-f543f2c67339
+	github.com/jalapeno-api-gateway/protorepo-jagw-go v1.3.3-0.20220315215958-d895c59dca7b
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	golang.org/x/text v0.3.7 // indirect
