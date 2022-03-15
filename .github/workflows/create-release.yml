@@ -1,11 +1,6 @@
 name: Create Release
 
-on:
-  workflow_call:
-    inputs:
-      tag_name:
-        type: string
-        required: true
+on: workflow_call
 
 jobs:
   create-release:
@@ -21,6 +16,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          tag_name: ${{ inputs.tag_name }}
-          release_name: ${{ inputs.tag_name }}
+          tag_name: ${{ github.event.inputs.tag_name }}
+          release_name: ${{ github.event.inputs.tag_name }}
           body: The release notes can be found in the official [documentation](https://jalapeno-api-gateway.github.io/jagw-docs/).

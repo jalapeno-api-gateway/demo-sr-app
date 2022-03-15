@@ -1,16 +1,6 @@
 name: Create Tag
 
-on: 
-  workflow_call:
-    inputs:
-      branch:
-        description: 'Name of the branch to create the tag on'
-        type: string
-        required: true
-      tag_name:
-        description: 'Name of the tag to create'
-        type: string
-        required: true
+on: workflow_call
  
 jobs:
   create-tag:
@@ -19,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.branch }}  
+          ref: ${{ github.event.inputs.build_branch }}  
           fetch-depth: 0
       - name: Create tag
         uses: actions/github-script@v5
@@ -33,4 +23,4 @@ jobs:
               sha: context.sha
             })
         env:
-          TAG_NAME: "${{ inputs.tag_name }}"
+          TAG_NAME: "${{ github.event.inputs.tag_name }}"

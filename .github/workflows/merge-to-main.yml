@@ -12,9 +12,9 @@ jobs:
         id: create-pull-request
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: ${{ inputs.source_branch }}
-          destination_branch: ${{ inputs.destination_branch }}
-          pr_title: "Auto-Generated PR: ${{ inputs.source_branch }} -> ${{ inputs.destination_branch }}"
+          source_branch: dev
+          destination_branch: main
+          pr_title: "Auto-Generated PR: dev -> main"
           pr_label: "automerge"
           pr_allow_empty: true
           github_token: ${{ github.token }}

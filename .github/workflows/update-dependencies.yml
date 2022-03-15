@@ -3,9 +3,6 @@ name: Update Dependencies
 on:
   workflow_call:
     inputs:
-      tag_name:
-        type: string
-        required: true
       protorepo_jagw_go_ref:
         type: string
         required: true

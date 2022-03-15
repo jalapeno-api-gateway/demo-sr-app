@@ -10,7 +10,7 @@ on:
         description: "Build branch (dev | main)"
         required: true
         type: string
-      type:
+      release_or_dev:
         description: "Type (dev | release)"
         required: true
         type: string
@@ -30,7 +30,7 @@ jobs:
       protorepo_jagw_go_ref: ${{ github.event.inputs.protorepo_jagw_go_ref }}
   call-merge-to-main:
     needs: call-update-dependencies
-    if: github.event.inputs.type == 'release'
+    if: github.event.inputs.release_or_dev == 'release'
     uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/merge-to-main.yml@dev
   call-create-tag:
     needs: [call-merge-to-main]
@@ -39,9 +39,6 @@ jobs:
       always() &&
       (needs.call-merge-to-main.result == 'success' || needs.call-merge-to-main.result == 'skipped') &&
       needs.call-update-dependencies.result == 'success'
-    with:
-      branch: ${{ github.event.inputs.build_branch }}
-      tag_name: ${{ github.event.inputs.tag_name }}
   call-create-release:
     needs: [call-create-tag]
     uses: jalapeno-api-gateway/demo-sr-app/.github/workflows/create-release.yml@dev
@@ -50,5 +47,3 @@ jobs:
       (needs.call-merge-to-main.result == 'success' || needs.call-merge-to-main.result == 'skipped') &&
       needs.call-create-tag.result == 'success' &&
       needs.call-update-dependencies.result == 'success'
-    with:
-      tag_name: ${{ github.event.inputs.tag_name }}
