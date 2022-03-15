@@ -1,0 +1,36 @@
+name: Create Tag
+
+on: 
+  workflow_call:
+    inputs:
+      branch:
+        description: 'Name of the branch to create the tag on'
+        type: string
+        required: true
+      tag_name:
+        description: 'Name of the tag to create'
+        type: string
+        required: true
+ 
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}  
+          fetch-depth: 0
+      - name: Create tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const { TAG_NAME } = process.env
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${ TAG_NAME }`,
+              sha: context.sha
+            })
+        env:
+          TAG_NAME: "${{ inputs.tag_name }}"
