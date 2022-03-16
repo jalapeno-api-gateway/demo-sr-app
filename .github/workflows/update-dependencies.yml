@@ -50,9 +50,10 @@ jobs:
               echo "::set-output name=exists::1"
           fi
       - name: Delete temp branch if it exists
-        if: steps.branch-exists.outputs.exists == 1
+        if: ${{ steps.cpr.outputs.pull-request-number != "" }}
         uses: dawidd6/action-delete-branch@v3
         with:
           github_token: ${{ github.token }}
           branches: gh-action-temp
+          soft_fail: true
           
