@@ -20,7 +20,7 @@ func GetDataRatesOfSpecificNode(rsClient jagw.RequestServiceClient) {
 			// Filter for measurements where source == "XR-3"
 			{
 				Property: proto.String("source"),
-				Value: proto.String("XR-3"),
+				Value:    proto.String("XR-5"),
 				Operator: jagw.StringOperator_EQUAL.Enum(),
 			},
 		},
@@ -50,7 +50,7 @@ func GetLatestMeasurement(rsClient jagw.RequestServiceClient, unflatten bool) {
 			// Filter for measurements where source == "XR-3"
 			{
 				Property: proto.String("source"),
-				Value: proto.String("XR-3"),
+				Value:    proto.String("XR-5"),
 				Operator: jagw.StringOperator_EQUAL.Enum(),
 			},
 		},
