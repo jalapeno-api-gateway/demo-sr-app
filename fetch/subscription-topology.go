@@ -15,12 +15,12 @@ func SubscribeToAllLinks(client jagw.SubscriptionServiceClient) {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	makeCancellable(cancel)
-	
+
 	subscription := &jagw.TopologySubscription{}
-	
+
 	// Subscribe via gRPC
 	stream := api.SubscribeToLinks(ctx, client, subscription)
-	
+
 	for {
 		event, err := stream.Recv()
 		if processEvent(ctx, event, err) {
@@ -29,12 +29,11 @@ func SubscribeToAllLinks(client jagw.SubscriptionServiceClient) {
 			prettyPrint(event)
 		} else {
 			// Some error occurred, abort subscription
-			break;
+			break
 
-		}		
+		}
 	}
 }
-
 
 func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 	log.Print("--------------------")
@@ -46,7 +45,7 @@ func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 
 	subscription := &jagw.TopologySubscription{
 		Keys: []string{
-			"2_0_2_0_0000.0000.000b_2001:db8:117::11_0000.0000.0007_2001:db8:117::7",
+			"2_0_2_0_0000.0000.0007_2001:db8:37::7_0000.0000.0003_2001:db8:37::3",
 		},
 		Properties: []string{
 			"Key",
@@ -57,7 +56,7 @@ func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 
 	// Subscribe via gRPC
 	stream := api.SubscribeToLinks(ctx, client, subscription)
-	
+
 	for {
 		event, err := stream.Recv()
 		if processEvent(ctx, event, err) {
@@ -66,8 +65,8 @@ func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 			prettyPrint(event)
 		} else {
 			// Some error occurred, abort subscription
-			break;
+			break
 
-		}	
+		}
 	}
 }
