@@ -15,8 +15,8 @@ func GetAllNodes(rsClient jagw.RequestServiceClient) {
 func GetSpecificNodes(rsClient jagw.RequestServiceClient) {
 	request := &jagw.TopologyRequest{
 		Keys: []string{
-			"2_0_0_0000.0000.0005",
-			"2_0_0_0000.0000.000d",
+			"2_0_0_0000.0000.0008",
+			"2_0_0_0000.0000.0002",
 		},
 		Properties: []string{
 			"Key",
