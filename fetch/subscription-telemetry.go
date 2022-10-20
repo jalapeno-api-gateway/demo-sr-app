@@ -29,7 +29,7 @@ func SubscribeToTelemetryDataOfSpecificNode(client jagw.SubscriptionServiceClien
 		StringFilters: []*jagw.StringFilter{
 			{
 				Property: proto.String("source"),
-				Value:    proto.String("XR-5"),
+				Value:    proto.String("XR-1"),
 				Operator: jagw.StringOperator_EQUAL.Enum(),
 			},
 		},

@@ -6,10 +6,10 @@ import (
 	"log"
 	"os"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"github.com/jalapeno-api-gateway/demo-sr-app/fetch"
 	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -67,10 +67,18 @@ func makeTopologyRequests(rsClient jagw.RequestServiceClient) {
 	fmt.Print("Press 'Enter' to: REQUEST ALL NODES")
 	input.Scan()
 	fetch.GetAllNodes(rsClient)
-	
+
 	fmt.Print("Press 'Enter' to: REQUEST SPECIFIC NODES AND SPECIFIC PROPERTIES")
 	input.Scan()
 	fetch.GetSpecificNodes(rsClient)
+
+	fmt.Print("Press 'Enter' to: REQUEST ALL LINKS")
+	input.Scan()
+	fetch.GetAllLinks(rsClient)
+
+	fmt.Print("Press 'Enter' to: REQUEST SEPCIFC LINKS AND SPECIFIC PROPERTIES")
+	input.Scan()
+	fetch.GetSpecificLink(rsClient)
 }
 
 func makeTelemetryRequests(rsClient jagw.RequestServiceClient) {
@@ -82,11 +90,11 @@ func makeTelemetryRequests(rsClient jagw.RequestServiceClient) {
 	fmt.Print("Press 'Enter' to: REQUEST DATA RATES OF PAST 60 SECONDS OF SPECIFIC NODE")
 	input.Scan()
 	fetch.GetDataRatesOfSpecificNode(rsClient)
-	
+
 	fmt.Print("Press 'Enter' to: REQUEST LATEST MEASUREMENT WITHOUT UNFLATTEN")
 	input.Scan()
 	fetch.GetLatestMeasurement(rsClient, false)
-	
+
 	fmt.Print("Press 'Enter' to: REQUEST LATEST MEASUREMENT WITH UNFLATTEN")
 	input.Scan()
 	fetch.GetLatestMeasurement(rsClient, true)
