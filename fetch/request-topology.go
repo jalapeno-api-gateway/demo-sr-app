@@ -29,3 +29,24 @@ func GetSpecificNodes(rsClient jagw.RequestServiceClient) {
 
 	prettyPrint(response)
 }
+
+func GetAllLinks(rsClient jagw.RequestServiceClient) {
+	request := &jagw.TopologyRequest{}
+	response := api.RequestLinks(rsClient, request)
+	prettyPrint(response)
+}
+
+func GetSpecificLink(rsClient jagw.RequestServiceClient) {
+	request := &jagw.TopologyRequest{
+		Keys: []string{
+			"2_0_2_0_0000.0000.0001_2001:db8:12::1_0000.0000.0002_2001:db8:12::2",
+			"2_0_2_0_0000.0000.0002_2001:db8:12::2_0000.0000.0001_2001:db8:12::1",
+		},
+		Properties: []string{
+			"LocalLinkIp",
+			"RemoteLinkIp",
+		},
+	}
+	response := api.RequestLinks(rsClient, request)
+	prettyPrint(response)
+}
