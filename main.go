@@ -113,6 +113,10 @@ func makeTopologySubscriptions(ssClient jagw.SubscriptionServiceClient) {
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINK")
 	input.Scan()
 	fetch.SubscribeToSpecificLink(ssClient)
+
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO LS NODE EDGE")
+	input.Scan()
+	fetch.SubscribeToLsNodeEdges(ssClient)
 }
 
 func makeTelemetrySubscriptions(ssClient jagw.SubscriptionServiceClient) {
