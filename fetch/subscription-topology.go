@@ -72,8 +72,6 @@ func SubscribeToSpecificLink(client jagw.SubscriptionServiceClient) {
 }
 
 func SubscribeToLsNodeEdges(client jagw.SubscriptionServiceClient) {
-	// TODO: Fix no events are returned form the server
-
 	log.Print("--------------------")
 	log.Printf("Subscribing To LSNodeEdges")
 
