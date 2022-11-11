@@ -79,6 +79,10 @@ func makeTopologyRequests(rsClient jagw.RequestServiceClient) {
 	fmt.Print("Press 'Enter' to: REQUEST SEPCIFC LINKS AND SPECIFIC PROPERTIES")
 	input.Scan()
 	fetch.GetSpecificLink(rsClient)
+
+	fmt.Print("Press 'Enter' to: REQUEST LS_NODE_COORDINATES")
+	input.Scan()
+	fetch.GetCoordinates(rsClient)
 }
 
 func makeTelemetryRequests(rsClient jagw.RequestServiceClient) {
