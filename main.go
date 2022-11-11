@@ -79,6 +79,10 @@ func makeTopologyRequests(rsClient jagw.RequestServiceClient) {
 	fmt.Print("Press 'Enter' to: REQUEST SEPCIFC LINKS AND SPECIFIC PROPERTIES")
 	input.Scan()
 	fetch.GetSpecificLink(rsClient)
+
+	fmt.Print("Press 'Enter' to: REQUEST LS_NODE_COORDINATES")
+	input.Scan()
+	fetch.GetCoordinates(rsClient)
 }
 
 func makeTelemetryRequests(rsClient jagw.RequestServiceClient) {
@@ -113,6 +117,10 @@ func makeTopologySubscriptions(ssClient jagw.SubscriptionServiceClient) {
 	fmt.Print("Press 'Enter' to: SUBSCRIBE TO SPECIFIC LINK")
 	input.Scan()
 	fetch.SubscribeToSpecificLink(ssClient)
+
+	fmt.Print("Press 'Enter' to: SUBSCRIBE TO LS NODE EDGE")
+	input.Scan()
+	fetch.SubscribeToLsNodeEdges(ssClient)
 }
 
 func makeTelemetrySubscriptions(ssClient jagw.SubscriptionServiceClient) {

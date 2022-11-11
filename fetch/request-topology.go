@@ -50,3 +50,9 @@ func GetSpecificLink(rsClient jagw.RequestServiceClient) {
 	response := api.RequestLinks(rsClient, request)
 	prettyPrint(response)
 }
+
+func GetCoordinates(rsClient jagw.RequestServiceClient) {
+	request := &jagw.LsNodeCoordinatesRequest{}
+	response := api.RequestCoordinates(rsClient, request)
+	prettyPrint(response)
+}
