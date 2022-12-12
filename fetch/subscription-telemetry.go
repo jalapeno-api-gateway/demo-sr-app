@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/jalapeno-api-gateway/demo-sr-app/api"
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -25,11 +25,11 @@ func SubscribeToTelemetryDataOfSpecificNode(client jagw.SubscriptionServiceClien
 			"arp_information/arp_timeout",
 			"source",
 		},
-		Unflatten:  proto.Bool(true),
+		Unflatten: proto.Bool(true),
 		StringFilters: []*jagw.StringFilter{
 			{
 				Property: proto.String("source"),
-				Value:    proto.String("XR-3"),
+				Value:    proto.String("XR-1"),
 				Operator: jagw.StringOperator_EQUAL.Enum(),
 			},
 		},
@@ -37,7 +37,7 @@ func SubscribeToTelemetryDataOfSpecificNode(client jagw.SubscriptionServiceClien
 
 	// Subscribe via gRPC
 	stream := api.SubscribeToTelemetryData(ctx, client, subscription)
-	
+
 	for {
 		event, err := stream.Recv()
 		if processEvent(ctx, event, err) {
@@ -46,7 +46,7 @@ func SubscribeToTelemetryDataOfSpecificNode(client jagw.SubscriptionServiceClien
 			prettyPrintTelemetryEvent(event)
 		} else {
 			// Some error occurred, abort subscription
-			break;
+			break
 
 		}
 	}

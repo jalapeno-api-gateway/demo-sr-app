@@ -4,8 +4,16 @@ import (
 	"context"
 	"log"
 
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 )
+
+func RequestCoordinates(client jagw.RequestServiceClient, request *jagw.LsNodeCoordinatesRequest) *jagw.LsNodeCoordinatesResponse {
+	response, err := client.GetLsNodeCoordinates(context.TODO(), request)
+	if err != nil {
+		log.Fatalf("Error when calling GetLsNodesCoordinates on request service: %s", err)
+	}
+	return response
+}
 
 func RequestNodes(client jagw.RequestServiceClient, request *jagw.TopologyRequest) *jagw.LsNodeResponse {
 	response, err := client.GetLsNodes(context.Background(), request)

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/jalapeno-api-gateway/demo-sr-app/api"
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -20,7 +20,7 @@ func GetDataRatesOfSpecificNode(rsClient jagw.RequestServiceClient) {
 			// Filter for measurements where source == "XR-3"
 			{
 				Property: proto.String("source"),
-				Value: proto.String("XR-3"),
+				Value:    proto.String("XR-5"),
 				Operator: jagw.StringOperator_EQUAL.Enum(),
 			},
 		},
@@ -50,7 +50,7 @@ func GetLatestMeasurement(rsClient jagw.RequestServiceClient, unflatten bool) {
 			// Filter for measurements where source == "XR-3"
 			{
 				Property: proto.String("source"),
-				Value: proto.String("XR-3"),
+				Value:    proto.String("XR-5"),
 				Operator: jagw.StringOperator_EQUAL.Enum(),
 			},
 		},

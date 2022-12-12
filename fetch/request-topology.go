@@ -2,7 +2,7 @@ package fetch
 
 import (
 	"github.com/jalapeno-api-gateway/demo-sr-app/api"
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 )
 
 func GetAllNodes(rsClient jagw.RequestServiceClient) {
@@ -15,8 +15,8 @@ func GetAllNodes(rsClient jagw.RequestServiceClient) {
 func GetSpecificNodes(rsClient jagw.RequestServiceClient) {
 	request := &jagw.TopologyRequest{
 		Keys: []string{
-			"2_0_0_0000.0000.0005",
-			"2_0_0_0000.0000.000d",
+			"2_0_0_0000.0000.0008",
+			"2_0_0_0000.0000.0002",
 		},
 		Properties: []string{
 			"Key",
@@ -27,5 +27,32 @@ func GetSpecificNodes(rsClient jagw.RequestServiceClient) {
 	}
 	response := api.RequestNodes(rsClient, request)
 
+	prettyPrint(response)
+}
+
+func GetAllLinks(rsClient jagw.RequestServiceClient) {
+	request := &jagw.TopologyRequest{}
+	response := api.RequestLinks(rsClient, request)
+	prettyPrint(response)
+}
+
+func GetSpecificLink(rsClient jagw.RequestServiceClient) {
+	request := &jagw.TopologyRequest{
+		Keys: []string{
+			"2_0_2_0_0000.0000.0001_2001:db8:12::1_0000.0000.0002_2001:db8:12::2",
+			"2_0_2_0_0000.0000.0002_2001:db8:12::2_0000.0000.0001_2001:db8:12::1",
+		},
+		Properties: []string{
+			"LocalLinkIp",
+			"RemoteLinkIp",
+		},
+	}
+	response := api.RequestLinks(rsClient, request)
+	prettyPrint(response)
+}
+
+func GetCoordinates(rsClient jagw.RequestServiceClient) {
+	request := &jagw.LsNodeCoordinatesRequest{}
+	response := api.RequestCoordinates(rsClient, request)
 	prettyPrint(response)
 }

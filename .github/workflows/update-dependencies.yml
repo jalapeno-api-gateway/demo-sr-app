@@ -39,18 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ github.token }}"
           PULL_REQUEST: "${{ steps.cpr.outputs.pull-request-number }}"
-      - name: Check if branch was created
-        # In previous steps, branch (and PR) only gets created if there were changes, otherwise not
-        id: branch-exists
-        run: |
-          exists_locally=$(git branch --list gh-action-temp)
-          if [[ -z ${exists_locally} ]]; then
-              echo "::set-output name=exists::1"
-          else
-              echo "::set-output name=exists::0"
-          fi
       - name: Delete temp branch if it exists
-        if: steps.branch-exists.outputs.exists == 1
+        if: steps.cpr.outputs.pull-request-number != ''
         uses: dawidd6/action-delete-branch@v3
         with:
           github_token: ${{ github.token }}
