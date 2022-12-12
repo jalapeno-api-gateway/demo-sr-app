@@ -9,7 +9,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 )
 
 // Making a subscription cancellable for demo purposes
@@ -38,11 +38,11 @@ func prettyPrint(any interface{}) {
 
 func prettyPrintTelemetryData(response *jagw.TelemetryResponse) {
 	telemetryDataSlice := make([]map[string]interface{}, len(response.TelemetryData))
-	
+
 	for i := 0; i < len(response.TelemetryData); i++ {
 		telemetryDataSlice[i] = makeMapFromJsonString(response.TelemetryData[i])
 	}
-	
+
 	responseAsMap := make(map[string]interface{})
 	responseAsMap["TelemetryData"] = telemetryDataSlice
 
@@ -51,7 +51,7 @@ func prettyPrintTelemetryData(response *jagw.TelemetryResponse) {
 
 func prettyPrintTelemetryEvent(event *jagw.TelemetryEvent) {
 	telemetryData := makeMapFromJsonString(*event.TelemetryData)
-	
+
 	responseAsMap := make(map[string]interface{})
 	responseAsMap["TelemetryData"] = telemetryData
 
@@ -81,6 +81,6 @@ func processEvent(ctx context.Context, event interface{}, err error) bool {
 		// Some other error occured
 		log.Fatalf("%v\n", err)
 	}
-	
+
 	return true
 }
