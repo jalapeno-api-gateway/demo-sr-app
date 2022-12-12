@@ -9,7 +9,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 )
 
 // Making a subscription cancellable for demo purposes

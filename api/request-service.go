@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 )
 
 func RequestCoordinates(client jagw.RequestServiceClient, request *jagw.LsNodeCoordinatesRequest) *jagw.LsNodeCoordinatesResponse {

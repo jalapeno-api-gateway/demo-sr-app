@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/jalapeno-api-gateway/demo-sr-app/api"
-	"github.com/jalapeno-api-gateway/protorepo-jagw-go/jagw"
+	"github.com/jalapeno-api-gateway/jagw-go/jagw"
 )
 
 func SubscribeToAllLinks(client jagw.SubscriptionServiceClient) {
