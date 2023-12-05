@@ -79,9 +79,18 @@ func makeTopologyRequests(rsClient jagw.RequestServiceClient) {
 	input.Scan()
 	fetch.GetSpecificLink(rsClient)
 
-	fmt.Print("Press 'Enter' to: REQUEST LS_NODE_COORDINATES")
-	input.Scan()
-	fetch.GetCoordinates(rsClient)
+	fmt.Print("Is the collection LS_NODE_COORDINATES configured? (y/n): ")
+	var answer string
+	_, err := fmt.Scanln(&answer)
+	if err == nil && answer == "Y" || err == nil && answer == "y" {
+		fmt.Print("Press 'Enter' to: REQUEST LS_NODE_COORDINATES")
+		input.Scan()
+		fetch.GetCoordinates(rsClient)
+	} else if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Skipping LS_NODE_COORDINATES request.")
+	}
 }
 
 func makeTelemetryRequests(rsClient jagw.RequestServiceClient) {
